@@ -63,7 +63,8 @@ export default function RootLayout({
             `,
           }}
         />
-        <header className="bg-blue-900 text-white shadow-md safe-area-top">
+        <div className="bg-blue-900 safe-area-top" />
+        <header className="bg-blue-900 text-white shadow-md">
           <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
             <Link href="/" className="text-lg md:text-xl font-bold tracking-tight">
               TKD Plan
@@ -95,7 +96,7 @@ export default function RootLayout({
             </nav>
           </div>
         </header>
-        <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-4 md:py-6">
+        <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-4 md:py-6 safe-area-bottom">
           {children}
         </main>
       </body>
