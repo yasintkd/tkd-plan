@@ -20,13 +20,18 @@ export default function HomePage() {
 
   useEffect(() => {
     async function loadData() {
-      const [sessions, programs] = await Promise.all([
-        getSessionsByDate(today),
-        getPrograms(),
-      ]);
-      setTodaySessions(sessions);
-      setProgramCount(programs.length);
-      setLoading(false);
+      try {
+        const [sessions, programs] = await Promise.all([
+          getSessionsByDate(today),
+          getPrograms(),
+        ]);
+        setTodaySessions(sessions);
+        setProgramCount(programs.length);
+      } catch (err) {
+        console.error('Ana sayfa verileri yüklenirken hata:', err);
+      } finally {
+        setLoading(false);
+      }
     }
     loadData();
   }, [today]);

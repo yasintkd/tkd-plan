@@ -5,6 +5,8 @@ import { format } from 'date-fns';
 
 export async function getSessions(): Promise<Session[]> {
   const supabase = getSupabase();
+  if (!supabase) return [];
+
   const { data, error } = await supabase
     .from('sessions')
     .select('*, program:programs(*)')
@@ -20,6 +22,8 @@ export async function getSessions(): Promise<Session[]> {
 
 export async function getSessionsByDateRange(startDate: string, endDate: string): Promise<Session[]> {
   const supabase = getSupabase();
+  if (!supabase) return [];
+
   const { data, error } = await supabase
     .from('sessions')
     .select('*, program:programs(*)')
@@ -37,6 +41,8 @@ export async function getSessionsByDateRange(startDate: string, endDate: string)
 
 export async function getSessionsByDate(date: string): Promise<Session[]> {
   const supabase = getSupabase();
+  if (!supabase) return [];
+
   const { data, error } = await supabase
     .from('sessions')
     .select('*, program:programs(*)')
@@ -53,6 +59,8 @@ export async function getSessionsByDate(date: string): Promise<Session[]> {
 
 export async function getSession(id: string): Promise<Session | null> {
   const supabase = getSupabase();
+  if (!supabase) return null;
+
   const { data, error } = await supabase
     .from('sessions')
     .select('*, program:programs(*)')
@@ -69,7 +77,7 @@ export async function getSession(id: string): Promise<Session | null> {
 
 export async function createSession(sessionData: SessionFormData): Promise<Session | null> {
   const supabase = getSupabase();
-  const sessionsToCreate: any[] = [];
+  if (!supabase) return null;
 
   const baseSession = {
     date: sessionData.date,
@@ -147,6 +155,8 @@ export async function createSession(sessionData: SessionFormData): Promise<Sessi
 
 export async function updateSession(id: string, updates: Partial<Session>): Promise<Session | null> {
   const supabase = getSupabase();
+  if (!supabase) return null;
+
   const { data, error } = await supabase
     .from('sessions')
     .update({ ...updates, updated_at: new Date().toISOString() })
@@ -172,6 +182,8 @@ export async function updateSessionProgram(id: string, programId: string | null)
 
 export async function deleteSession(id: string): Promise<boolean> {
   const supabase = getSupabase();
+  if (!supabase) return false;
+
   const { error } = await supabase
     .from('sessions')
     .delete()

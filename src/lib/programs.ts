@@ -3,6 +3,8 @@ import type { Program } from '@/types';
 
 export async function getPrograms(): Promise<Program[]> {
   const supabase = getSupabase();
+  if (!supabase) return [];
+
   const { data, error } = await supabase
     .from('programs')
     .select('*')
@@ -18,6 +20,8 @@ export async function getPrograms(): Promise<Program[]> {
 
 export async function getProgram(id: string): Promise<Program | null> {
   const supabase = getSupabase();
+  if (!supabase) return null;
+
   const { data, error } = await supabase
     .from('programs')
     .select('*')
@@ -34,6 +38,8 @@ export async function getProgram(id: string): Promise<Program | null> {
 
 export async function createProgram(name: string, sections: { title: string; drills: string }[]): Promise<Program | null> {
   const supabase = getSupabase();
+  if (!supabase) return null;
+
   const { data, error } = await supabase
     .from('programs')
     .insert({ name, sections })
@@ -50,6 +56,8 @@ export async function createProgram(name: string, sections: { title: string; dri
 
 export async function updateProgram(id: string, name: string, sections: { title: string; drills: string }[]): Promise<Program | null> {
   const supabase = getSupabase();
+  if (!supabase) return null;
+
   const { data, error } = await supabase
     .from('programs')
     .update({ name, sections, updated_at: new Date().toISOString() })
@@ -67,6 +75,8 @@ export async function updateProgram(id: string, name: string, sections: { title:
 
 export async function deleteProgram(id: string): Promise<boolean> {
   const supabase = getSupabase();
+  if (!supabase) return false;
+
   const { error } = await supabase
     .from('programs')
     .delete()
