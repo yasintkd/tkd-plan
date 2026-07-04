@@ -45,6 +45,8 @@ export default function NewProgramPage() {
 
       if (program) {
         router.push('/programs');
+      } else {
+        alert('Program kaydedilirken bir hata oluştu. Lütfen Supabase bağlantınızı kontrol edin ve tekrar deneyin.');
       }
     } catch (err) {
       console.error('Program kaydedilirken hata:', err);

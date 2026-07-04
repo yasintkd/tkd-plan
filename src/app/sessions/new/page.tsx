@@ -51,6 +51,8 @@ function NewSessionForm() {
 
       if (session) {
         router.push('/calendar');
+      } else {
+        alert('Seans kaydedilirken bir hata oluştu. Lütfen Supabase bağlantınızı kontrol edin ve tekrar deneyin.');
       }
     } catch (err) {
       console.error('Seans kaydedilirken hata:', err);

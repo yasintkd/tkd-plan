@@ -57,6 +57,8 @@ export default function EditProgramPage() {
 
       if (program) {
         router.push('/programs');
+      } else {
+        alert('Program güncellenirken bir hata oluştu. Lütfen Supabase bağlantınızı kontrol edin ve tekrar deneyin.');
       }
     } catch (err) {
       console.error('Program güncellenirken hata:', err);
