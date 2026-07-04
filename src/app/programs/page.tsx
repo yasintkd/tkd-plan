@@ -20,7 +20,8 @@ export default function ProgramsPage() {
     });
   }, []);
 
-  async function handleDelete(id: string, name: string) {
+  async function handleDelete(e: React.MouseEvent, id: string, name: string) {
+    e.stopPropagation();
     if (!confirm(`"${name}" programını silmek istediğinize emin misiniz?`)) return;
     const success = await deleteProgram(id);
     if (success) {
@@ -51,7 +52,11 @@ export default function ProgramsPage() {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           {programs.map((program) => (
-            <Card key={program.id} className="hover:shadow-md transition-shadow">
+            <Card
+              key={program.id}
+              className="hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => router.push(`/programs/${program.id}`)}
+            >
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">{program.name}</CardTitle>
               </CardHeader>
@@ -66,7 +71,7 @@ export default function ProgramsPage() {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => handleDelete(program.id, program.name)}
+                    onClick={(e) => handleDelete(e, program.id, program.name)}
                   >
                     Sil
                   </Button>
