@@ -36,21 +36,27 @@ function NewSessionForm() {
     e.preventDefault();
     setSaving(true);
 
-    const sessionData = {
-      date,
-      start_time: startTime,
-      duration_min: durationMin ? parseInt(durationMin) : null,
-      program_id: programId === 'none' ? null : programId,
-      notes,
-      recurrence,
-      recurrence_end_date: recurrence !== 'none' ? recurrenceEndDate : null,
-    };
+    try {
+      const sessionData = {
+        date,
+        start_time: startTime,
+        duration_min: durationMin ? parseInt(durationMin) : null,
+        program_id: programId === 'none' ? null : programId,
+        notes,
+        recurrence,
+        recurrence_end_date: recurrence !== 'none' ? recurrenceEndDate : null,
+      };
 
-    const session = await createSession(sessionData);
-    setSaving(false);
+      const session = await createSession(sessionData);
 
-    if (session) {
-      router.push('/calendar');
+      if (session) {
+        router.push('/calendar');
+      }
+    } catch (err) {
+      console.error('Seans kaydedilirken hata:', err);
+      alert('Seans kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      setSaving(false);
     }
   }
 

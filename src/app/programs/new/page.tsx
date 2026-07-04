@@ -39,12 +39,18 @@ export default function NewProgramPage() {
     if (!name.trim()) return;
 
     setSaving(true);
-    const validSections = sections.filter((s) => s.title.trim());
-    const program = await createProgram(name.trim(), validSections);
-    setSaving(false);
+    try {
+      const validSections = sections.filter((s) => s.title.trim());
+      const program = await createProgram(name.trim(), validSections);
 
-    if (program) {
-      router.push('/programs');
+      if (program) {
+        router.push('/programs');
+      }
+    } catch (err) {
+      console.error('Program kaydedilirken hata:', err);
+      alert('Program kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      setSaving(false);
     }
   }
 

@@ -51,12 +51,18 @@ export default function EditProgramPage() {
     if (!name.trim()) return;
 
     setSaving(true);
-    const validSections = sections.filter((s) => s.title.trim());
-    const program = await updateProgram(id, name.trim(), validSections);
-    setSaving(false);
+    try {
+      const validSections = sections.filter((s) => s.title.trim());
+      const program = await updateProgram(id, name.trim(), validSections);
 
-    if (program) {
-      router.push('/programs');
+      if (program) {
+        router.push('/programs');
+      }
+    } catch (err) {
+      console.error('Program güncellenirken hata:', err);
+      alert('Program güncellenirken bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      setSaving(false);
     }
   }
 
