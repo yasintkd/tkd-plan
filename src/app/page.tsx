@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { getSessionsByDate } from '@/lib/sessions';
 import { getPrograms } from '@/lib/programs';
 import type { Session } from '@/types';
@@ -11,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export default function HomePage() {
+  const router = useRouter();
   const [todaySessions, setTodaySessions] = useState<Session[]>([]);
   const [programCount, setProgramCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -67,8 +69,12 @@ export default function HomePage() {
       ) : (
         <div className="space-y-3">
           {todaySessions.map((session) => (
-            <Link key={session.id} href={`/sessions/${session.id}`}>
-              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <div
+              key={session.id}
+              onClick={() => router.push(`/sessions/${session.id}`)}
+              className="cursor-pointer"
+            >
+              <Card className="hover:shadow-md transition-shadow">
                 <CardContent className="py-4 flex items-center justify-between">
                   <div>
                     <p className="text-lg font-semibold">
@@ -86,14 +92,17 @@ export default function HomePage() {
                   )}
                 </CardContent>
               </Card>
-            </Link>
+            </div>
           ))}
         </div>
       )}
 
       <div className="grid grid-cols-2 gap-4">
-        <Link href="/programs">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+        <div
+          onClick={() => router.push('/programs')}
+          className="cursor-pointer"
+        >
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg">Program Havuzu</CardTitle>
             </CardHeader>
@@ -102,7 +111,7 @@ export default function HomePage() {
               <p className="text-sm text-gray-500">kayıtlı program</p>
             </CardContent>
           </Card>
-        </Link>
+        </div>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Bugünkü Seans</CardTitle>

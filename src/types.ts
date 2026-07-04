@@ -37,3 +37,36 @@ export interface SessionFormData {
   recurrence: RecurrenceFrequency;
   recurrence_end_date: string | null;
 }
+
+// ─── yc-team-tkd types (salon yönetimi) ────────────────────────────────────
+
+export interface YcTrainingGroup {
+  id: string;
+  name: string;
+  notes: string | null;
+  is_active: boolean;
+}
+
+export interface YcGroupSchedule {
+  id: string;
+  group_id: string;
+  day_of_week: number; // 1=Pazartesi … 7=Pazar
+  start_time: string;  // HH:mm
+  end_time: string;    // HH:mm
+}
+
+/**
+ * yc-team-tkd'den gelen schedule'ların belirli bir tarih için somutlaştırılmış hali.
+ * Henüz program atanmamış, yani bir Session'a dönüştürülmemiş.
+ */
+export interface YcSyncedSession {
+  id: string;           // schedule_id + date'den türetilmiş unique id
+  source_schedule_id: string;
+  group_id: string;
+  group_name: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  duration_min: number;
+  day_of_week: number;
+}

@@ -3,20 +3,52 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { getSessionsByDateRange } from '@/lib/sessions';
-import type { Session } from '@/types';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addMonths, subMonths, addWeeks, subWeeks, eachDayOfInterval, isSameMonth, isSameDay, isToday } from 'date-fns';
+import { getYcSyncedSessions, createSessionFromYcSchedule } from '@/lib/yc-sessions';
+import { getPrograms } from '@/lib/programs';
+import type { Session, YcSyncedSession, Program } from '@/types';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addMonths, subMonths, addWeeks, subWeeks, eachDayOfInterval, isSameMonth, isToday } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 type ViewMode = 'month' | 'week';
+
+interface CalendarSession {
+  id: string;
+  date: string;
+  start_time: string;
+  duration_min: number | null;
+  program?: Program | null;
+  group_name?: string; // yc kaynağıysa grup adı
+  isYcSource: boolean;
+  ycScheduleId?: string;
+  ycEndTime?: string;
+  notes?: string;
+}
 
 export default function CalendarPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [sessions, setSessions] = useState<Session[]>([]);
+  const [tkdSessions, setTkdSessions] = useState<Session[]>([]);
+  const [ycSessions, setYcSessions] = useState<YcSyncedSession[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  // Program atama dialog state
+  const [assignDialog, setAssignDialog] = useState<{
+    open: boolean;
+    ycSession: YcSyncedSession | null;
+    selectedProgramId: string;
+    assigning: boolean;
+  }>({
+    open: false,
+    ycSession: null,
+    selectedProgramId: '',
+    assigning: false,
+  });
 
   const getDateRange = useCallback(() => {
     if (viewMode === 'month') {
@@ -44,8 +76,15 @@ export default function CalendarPage() {
     const endStr = format(range.end, 'yyyy-MM-dd');
 
     setLoading(true);
-    getSessionsByDateRange(startStr, endStr).then((data) => {
-      setSessions(data);
+
+    Promise.all([
+      getSessionsByDateRange(startStr, endStr),
+      getYcSyncedSessions(startStr, endStr),
+      getPrograms(),
+    ]).then(([tkdData, ycData, progData]) => {
+      setTkdSessions(tkdData);
+      setYcSessions(ycData);
+      setPrograms(progData);
       setLoading(false);
     });
   }, [currentDate, viewMode, getDateRange]);
@@ -59,13 +98,94 @@ export default function CalendarPage() {
   }
 
   const range = getDateRange();
-  const selectedSessions = selectedDate
-    ? sessions.filter((s) => s.date === selectedDate)
+
+  // Tüm takvim öğelerini birleştir
+  function getCalendarSessionsForDay(day: Date): CalendarSession[] {
+    const dayStr = format(day, 'yyyy-MM-dd');
+
+    // tkd-plan'in kendi sessionları
+    const fromTkd: CalendarSession[] = tkdSessions
+      .filter((s) => s.date === dayStr)
+      .map((s) => ({
+        id: s.id,
+        date: s.date,
+        start_time: s.start_time,
+        duration_min: s.duration_min,
+        program: s.program,
+        isYcSource: false,
+        notes: s.notes,
+      }));
+
+    // yc-team-tkd'den gelen schedule'lar (program atanmamış olanlar)
+    const fromYc: CalendarSession[] = ycSessions
+      .filter((s) => s.date === dayStr)
+      .map((s) => ({
+        id: s.id,
+        date: s.date,
+        start_time: s.start_time,
+        duration_min: s.duration_min,
+        group_name: s.group_name,
+        isYcSource: true,
+        ycScheduleId: s.source_schedule_id,
+        ycEndTime: s.end_time,
+      }));
+
+    // Saate göre sırala
+    return [...fromTkd, ...fromYc].sort((a, b) => a.start_time.localeCompare(b.start_time));
+  }
+
+  const selectedDateSessions = selectedDate
+    ? getCalendarSessionsForDay(new Date(selectedDate + 'T12:00:00'))
     : [];
 
-  function getSessionsForDay(day: Date): Session[] {
-    const dayStr = format(day, 'yyyy-MM-dd');
-    return sessions.filter((s) => s.date === dayStr);
+  function getSessionsForDay(day: Date): CalendarSession[] {
+    return getCalendarSessionsForDay(day);
+  }
+
+  // Program atama dialog'u aç
+  function openAssignDialog(ycSession: YcSyncedSession) {
+    setAssignDialog({
+      open: true,
+      ycSession,
+      selectedProgramId: programs.length > 0 ? programs[0].id : '',
+      assigning: false,
+    });
+  }
+
+  // Program ata
+  async function handleAssignProgram() {
+    if (!assignDialog.ycSession || !assignDialog.selectedProgramId) return;
+
+    setAssignDialog((prev) => ({ ...prev, assigning: true }));
+
+    const result = await createSessionFromYcSchedule({
+      scheduleId: assignDialog.ycSession.source_schedule_id,
+      date: assignDialog.ycSession.date,
+      startTime: assignDialog.ycSession.start_time,
+      endTime: assignDialog.ycSession.end_time,
+      programId: assignDialog.selectedProgramId,
+      groupName: assignDialog.ycSession.group_name,
+    });
+
+    if (result) {
+      // Başarılı: dialog'u kapat, verileri yenile
+      setAssignDialog({ open: false, ycSession: null, selectedProgramId: '', assigning: false });
+
+      // Mevcut ycSession'ı listeden çıkar ve tkdSessions'a ekle
+      const range = getDateRange();
+      const startStr = format(range.start, 'yyyy-MM-dd');
+      const endStr = format(range.end, 'yyyy-MM-dd');
+
+      const [tkdData, ycData] = await Promise.all([
+        getSessionsByDateRange(startStr, endStr),
+        getYcSyncedSessions(startStr, endStr),
+      ]);
+      setTkdSessions(tkdData);
+      setYcSessions(ycData);
+    } else {
+      setAssignDialog((prev) => ({ ...prev, assigning: false }));
+      alert('Program atanırken bir hata oluştu.');
+    }
   }
 
   return (
@@ -105,6 +225,18 @@ export default function CalendarPage() {
         </div>
       </div>
 
+      {/* Lejant */}
+      <div className="flex items-center gap-4 text-xs text-gray-500">
+        <div className="flex items-center gap-1.5">
+          <span className="inline-block w-3 h-3 rounded-full bg-blue-500" />
+          <span>Programlı</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="inline-block w-3 h-3 rounded-full bg-amber-400" />
+          <span>Programsız (yc-team-tkd)</span>
+        </div>
+      </div>
+
       {/* Calendar grid */}
       <Card>
         <CardContent className="p-4">
@@ -125,6 +257,10 @@ export default function CalendarPage() {
               const isCurrentMonth = viewMode === 'week' || isSameMonth(day, currentDate);
               const isSelected = selectedDate === dayStr;
 
+              // Programlı ve programsız seans sayıları
+              const programliCount = daySessions.filter((s) => !s.isYcSource).length;
+              const programsizCount = daySessions.filter((s) => s.isYcSource).length;
+
               return (
                 <button
                   key={dayStr}
@@ -144,12 +280,18 @@ export default function CalendarPage() {
                       {daySessions.slice(0, 3).map((s) => (
                         <div
                           key={s.id}
-                          className="w-full h-1.5 rounded-full bg-blue-500 opacity-60"
-                          title={`${s.start_time.slice(0, 5)} - ${s.program?.name || 'Programsız'}`}
+                          className={`w-full h-1.5 rounded-full ${s.isYcSource ? 'bg-amber-400' : 'bg-blue-500'} opacity-60`}
+                          title={`${s.start_time.slice(0, 5)}${s.isYcSource ? ` - ${s.group_name} (Programsız)` : s.program ? ` - ${s.program.name}` : ''}`}
                         />
                       ))}
                       {daySessions.length > 3 && (
                         <span className="text-[10px] text-gray-400">+{daySessions.length - 3}</span>
+                      )}
+                      {/* İstatistik */}
+                      {programliCount > 0 && programsizCount > 0 && (
+                        <span className="text-[10px] text-gray-400 block">
+                          {programliCount}P / {programsizCount}S
+                        </span>
                       )}
                     </div>
                   )}
@@ -172,34 +314,135 @@ export default function CalendarPage() {
             </Link>
           </div>
 
-          {selectedSessions.length === 0 ? (
+          {selectedDateSessions.length === 0 ? (
             <p className="text-gray-400 text-sm">Bu günde seans bulunmuyor.</p>
           ) : (
-            selectedSessions.map((session) => (
-              <Link key={session.id} href={`/sessions/${session.id}`}>
-                <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                  <CardContent className="py-3 flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold">
-                        {session.start_time.slice(0, 5)}
-                        {session.duration_min ? ` (${session.duration_min} dk)` : ''}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {session.program ? session.program.name : 'Programsız'}
-                      </p>
-                    </div>
-                    {session.notes && (
-                      <span className="text-xs text-gray-400 italic max-w-[150px] truncate">
-                        {session.notes}
-                      </span>
-                    )}
-                  </CardContent>
-                </Card>
-              </Link>
+            selectedDateSessions.map((session) => (
+              <div key={session.id}>
+                {session.isYcSource ? (
+                  // yc-team-tkd kaynaklı (program atanabilir)
+                  <Card className="border-amber-200 hover:shadow-md transition-shadow">
+                    <CardContent className="py-3 flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-block w-2 h-2 rounded-full bg-amber-400" />
+                          <p className="font-semibold text-sm">
+                            {session.start_time.slice(0, 5)}
+                            {session.duration_min ? ` (${session.duration_min} dk)` : ''}
+                          </p>
+                          <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                            {session.group_name}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-500 mt-1">Henüz program atanmamış</p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const ycSession = ycSessions.find(
+                            (ys) => ys.id === session.id
+                          );
+                          if (ycSession) openAssignDialog(ycSession);
+                        }}
+                      >
+                        Program Ata
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  // tkd-plan'in kendi seansı
+                  <Link href={`/sessions/${session.id}`}>
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                      <CardContent className="py-3 flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold">
+                            {session.start_time.slice(0, 5)}
+                            {session.duration_min ? ` (${session.duration_min} dk)` : ''}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {session.program ? session.program.name : 'Programsız'}
+                          </p>
+                        </div>
+                        {session.notes && (
+                          <span className="text-xs text-gray-400 italic max-w-[150px] truncate">
+                            {session.notes}
+                          </span>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </Link>
+                )}
+              </div>
             ))
           )}
         </div>
       )}
+
+      {/* Program Atama Dialog */}
+      <Dialog
+        open={assignDialog.open}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAssignDialog({ open: false, ycSession: null, selectedProgramId: '', assigning: false });
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Program Ata</DialogTitle>
+            <DialogDescription>
+              {assignDialog.ycSession && (
+                <>
+                  <span className="font-medium">{assignDialog.ycSession.group_name}</span> grubunun{' '}
+                  <span className="font-medium">
+                    {format(new Date(assignDialog.ycSession.date + 'T12:00:00'), 'd MMMM yyyy', { locale: tr })}
+                  </span>{' '}
+                  tarihindeki{' '}
+                  <span className="font-medium">{assignDialog.ycSession.start_time.slice(0, 5)}</span> seansına
+                  bir program atayın.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2">
+            <Label htmlFor="program-select">Antrenman Programı</Label>
+            <select
+              id="program-select"
+              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm"
+              value={assignDialog.selectedProgramId}
+              onChange={(e) =>
+                setAssignDialog((prev) => ({ ...prev, selectedProgramId: e.target.value }))
+              }
+            >
+              {programs.length === 0 && (
+                <option value="" disabled>Henüz program bulunmuyor</option>
+              )}
+              {programs.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+            {programs.length === 0 && (
+              <p className="text-xs text-amber-600">
+                Önce bir antrenman programı oluşturmalısınız.
+              </p>
+            )}
+          </div>
+
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline">İptal</Button>} />
+            <Button
+              onClick={handleAssignProgram}
+              disabled={assignDialog.assigning || !assignDialog.selectedProgramId || programs.length === 0}
+            >
+              {assignDialog.assigning ? 'Atanıyor...' : 'Programı Ata'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
