@@ -92,15 +92,17 @@ export default function HomePage() {
       )}
 
       <div className="grid grid-cols-2 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Program Havuzu</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-blue-900">{programCount}</p>
-            <p className="text-sm text-gray-500">kayıtlı program</p>
-          </CardContent>
-        </Card>
+        <Link href="/programs">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Program Havuzu</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-blue-900">{programCount}</p>
+              <p className="text-sm text-gray-500">kayıtlı program</p>
+            </CardContent>
+          </Card>
+        </Link>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Bugünkü Seans</CardTitle>
