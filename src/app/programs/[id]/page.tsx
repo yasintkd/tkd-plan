@@ -71,12 +71,12 @@ export default function ProgramDetailPage() {
       ) : (
         <div className="space-y-4">
           {program.sections.map((section, index) => (
-            <Card key={index}>
+            <Card key={index} className="border-l-4 border-l-blue-500">
               <CardContent className="pt-4 space-y-2">
-                <h3 className="font-semibold text-lg border-b pb-1">
+                <h3 className="font-semibold text-lg text-blue-700 bg-blue-50 -mx-6 -mt-4 px-6 py-3 mb-2 border-b border-blue-100">
                   {section.title || `Bölüm ${index + 1}`}
                 </h3>
-                <div className="whitespace-pre-wrap text-sm text-gray-300 leading-relaxed">
+                <div className="whitespace-pre-wrap text-sm text-black leading-relaxed">
                   {section.drills || '—'}
                 </div>
               </CardContent>
