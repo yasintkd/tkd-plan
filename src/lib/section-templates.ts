@@ -108,3 +108,32 @@ export async function deleteSectionTemplate(id: string): Promise<boolean> {
 
   return true;
 }
+
+export async function deleteCategory(category: string): Promise<{ success: boolean; count: number }> {
+  const supabase = getSupabase();
+  if (!supabase) return { success: false, count: 0 };
+
+  // Önce kaç şablon silineceğini bul
+  const { count, error: countError } = await supabase
+    .from('section_templates')
+    .select('*', { count: 'exact', head: true })
+    .eq('category', category);
+
+  if (countError) {
+    console.error('Error counting templates in category:', countError);
+    return { success: false, count: 0 };
+  }
+
+  // Tüm şablonları sil
+  const { error } = await supabase
+    .from('section_templates')
+    .delete()
+    .eq('category', category);
+
+  if (error) {
+    console.error('Error deleting category:', error);
+    return { success: false, count: count || 0 };
+  }
+
+  return { success: true, count: count || 0 };
+}

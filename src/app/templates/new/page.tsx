@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createSectionTemplate, getCategories } from '@/lib/section-templates';
+import { createSectionTemplate, getCategories, deleteCategory } from '@/lib/section-templates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -20,8 +20,27 @@ export default function NewTemplatePage() {
   const [newCategory, setNewCategory] = useState('');
 
   useEffect(() => {
-    getCategories().then(setCategories);
+    loadCategories();
   }, []);
+
+  async function loadCategories() {
+    const cats = await getCategories();
+    setCategories(cats);
+  }
+
+  async function handleDeleteCategory(e: React.MouseEvent, cat: string) {
+    e.stopPropagation();
+    if (!confirm(`"${cat}" kategorisindeki tüm şablonları silmek istediğinize emin misiniz?`)) return;
+    const result = await deleteCategory(cat);
+    if (result.success) {
+      loadCategories();
+      if (category === cat) {
+        setCategory('');
+      }
+    } else {
+      alert('Kategori silinirken hata oluştu.');
+    }
+  }
 
   function handleCategorySelect(cat: string) {
     if (cat === '__new__') {
@@ -76,18 +95,32 @@ export default function NewTemplatePage() {
           <div className="space-y-2">
             <div className="flex flex-wrap gap-1.5">
               {categories.map((cat) => (
-                <button
+                <span
                   key={cat}
-                  type="button"
-                  onClick={() => handleCategorySelect(cat)}
-                  className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                  className={`group inline-flex items-center gap-0.5 px-3 py-1.5 rounded-full text-sm border transition-colors cursor-pointer ${
                     category === cat && !showNewCategory
                       ? 'bg-blue-600 text-white border-blue-600'
                       : 'bg-white text-gray-700 border-gray-200 hover:border-blue-300'
                   }`}
+                  onClick={() => handleCategorySelect(cat)}
                 >
                   {cat}
-                </button>
+                  <button
+                    type="button"
+                    onClick={(e) => handleDeleteCategory(e, cat)}
+                    className={`ml-0.5 rounded-full p-0.5 transition-colors ${
+                      category === cat && !showNewCategory
+                        ? 'text-blue-200 hover:text-white hover:bg-blue-500'
+                        : 'text-gray-300 hover:text-red-500 hover:bg-red-50'
+                    }`}
+                    title={`"${cat}" kategorisini sil`}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </span>
               ))}
               <button
                 type="button"
