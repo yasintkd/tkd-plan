@@ -59,6 +59,15 @@ export interface YcGroupSchedule {
  * yc-team-tkd'den gelen schedule'ların belirli bir tarih için somutlaştırılmış hali.
  * Henüz program atanmamış, yani bir Session'a dönüştürülmemiş.
  */
+export interface SectionTemplate {
+  id: string;
+  title: string;
+  category: string;
+  drills: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface YcSyncedSession {
   id: string;           // schedule_id + date'den türetilmiş unique id
   source_schedule_id: string;

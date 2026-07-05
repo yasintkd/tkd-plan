@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import TemplatePicker from '@/components/template-picker';
 
 export default function NewProgramPage() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function NewProgramPage() {
     { title: '', drills: '' },
   ]);
   const [saving, setSaving] = useState(false);
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
 
   function addSection() {
     setSections([...sections, { title: '', drills: '' }]);
@@ -32,6 +34,10 @@ export default function NewProgramPage() {
       i === index ? { ...s, [field]: value } : s
     );
     setSections(updated);
+  }
+
+  function handleTemplateSelect(newSections: Section[]) {
+    setSections([...sections, ...newSections]);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -75,9 +81,14 @@ export default function NewProgramPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Label className="text-lg font-semibold">Bölümler</Label>
-            <Button type="button" variant="outline" size="sm" onClick={addSection}>
-              + Bölüm Ekle
-            </Button>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => setTemplatePickerOpen(true)}>
+                + Şablon Ekle
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={addSection}>
+                + Boş Bölüm Ekle
+              </Button>
+            </div>
           </div>
 
           {sections.map((section, index) => (
@@ -122,6 +133,12 @@ export default function NewProgramPage() {
           </Button>
         </div>
       </form>
+
+      <TemplatePicker
+        open={templatePickerOpen}
+        onOpenChange={setTemplatePickerOpen}
+        onSelect={handleTemplateSelect}
+      />
     </div>
   );
 }

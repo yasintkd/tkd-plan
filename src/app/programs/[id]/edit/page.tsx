@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import TemplatePicker from '@/components/template-picker';
 
 export default function EditProgramPage() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function EditProgramPage() {
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
 
   useEffect(() => {
     getProgram(id).then((program) => {
@@ -29,6 +31,10 @@ export default function EditProgramPage() {
       setLoading(false);
     });
   }, [id]);
+
+  function handleTemplateSelect(newSections: Section[]) {
+    setSections([...sections, ...newSections]);
+  }
 
   function addSection() {
     setSections([...sections, { title: '', drills: '' }]);
@@ -89,9 +95,14 @@ export default function EditProgramPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Label className="text-lg font-semibold">Bölümler</Label>
-            <Button type="button" variant="outline" size="sm" onClick={addSection}>
-              + Bölüm Ekle
-            </Button>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => setTemplatePickerOpen(true)}>
+                + Şablon Ekle
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={addSection}>
+                + Boş Bölüm Ekle
+              </Button>
+            </div>
           </div>
 
           {sections.map((section, index) => (
@@ -136,6 +147,12 @@ export default function EditProgramPage() {
           </Button>
         </div>
       </form>
+
+      <TemplatePicker
+        open={templatePickerOpen}
+        onOpenChange={setTemplatePickerOpen}
+        onSelect={handleTemplateSelect}
+      />
     </div>
   );
 }
