@@ -86,6 +86,12 @@ export default function RootLayout({
                 Takvim
               </Link>
               <Link
+                href="/templates"
+                className="hover:text-blue-200 transition-colors px-2 py-1 rounded active:bg-blue-800"
+              >
+                Şablonlar
+              </Link>
+              <Link
                 href="/settings"
                 className="hover:text-blue-200 transition-colors px-2 py-1 rounded active:bg-blue-800"
                 aria-label="Ayarlar"
