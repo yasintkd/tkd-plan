@@ -117,17 +117,20 @@ export default function SessionDetailPage() {
 
       {/* Program drill list */}
       {session.program && session.program.sections && session.program.sections.length > 0 && (
-        <Card>
-          <CardContent className="pt-4 space-y-4">
-            <h2 className="text-lg font-semibold">{session.program.name}</h2>
-            {session.program.sections.map((section, idx) => (
-              <div key={idx}>
-                <h3 className="font-medium text-sm text-blue-700 mb-1">{section.title}</h3>
-                <p className="text-sm whitespace-pre-line text-gray-700">{section.drills}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <div className="space-y-4">
+          {session.program.sections.map((section, idx) => (
+            <Card key={idx} className="border-l-4 border-l-blue-500">
+              <CardContent className="pt-4 space-y-2">
+                <h3 className="font-semibold text-lg text-blue-700 bg-blue-50 -mx-6 -mt-4 px-6 py-3 mb-2 border-b border-blue-100">
+                  {section.title}
+                </h3>
+                <div className="whitespace-pre-wrap text-sm text-black leading-relaxed">
+                  {section.drills}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
 
       {/* Notes */}
