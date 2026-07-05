@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getSectionTemplates, deleteSectionTemplate } from '@/lib/section-templates';
+import { getSectionTemplates, deleteSectionTemplate, getCategories } from '@/lib/section-templates';
 import type { SectionTemplate } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,10 +14,13 @@ export default function TemplatesPage() {
   const [templates, setTemplates] = useState<SectionTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
-    getSectionTemplates().then((data) => {
+    Promise.all([getSectionTemplates(), getCategories()]).then(([data, cats]) => {
       setTemplates(data);
+      setCategories(cats);
       setLoading(false);
     });
   }, []);
@@ -33,6 +36,9 @@ export default function TemplatesPage() {
   }
 
   const filtered = templates.filter((t) => {
+    // kategori filtresi
+    if (selectedCategory && t.category !== selectedCategory) return false;
+    // arama filtresi
     if (!search.trim()) return true;
     const q = search.toLowerCase();
     return (
@@ -64,6 +70,35 @@ export default function TemplatesPage() {
         <Button onClick={() => router.push('/templates/new')}>
           + Yeni Şablon
         </Button>
+      </div>
+
+      {/* Category Filters */}
+      <div className="flex flex-wrap gap-1.5">
+        <button
+          type="button"
+          onClick={() => setSelectedCategory(null)}
+          className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+            !selectedCategory
+              ? 'bg-blue-600 text-white border-blue-600'
+              : 'bg-white text-gray-700 border-gray-200 hover:border-blue-300'
+          }`}
+        >
+          Tümü
+        </button>
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            type="button"
+            onClick={() => setSelectedCategory(cat === selectedCategory ? null : cat)}
+            className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+              selectedCategory === cat
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-200 hover:border-blue-300'
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
       </div>
 
       {/* Search */}
