@@ -20,6 +20,7 @@ export default function TemplatePicker({ open, onOpenChange, onSelect }: Templat
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Hızlı ekleme formu
   const [showQuickForm, setShowQuickForm] = useState(false);
@@ -36,6 +37,7 @@ export default function TemplatePicker({ open, onOpenChange, onSelect }: Templat
         setCategories(cats);
         setSelectedIds(new Set());
         setSearch('');
+        setSelectedCategory(null);
         setShowQuickForm(false);
         resetQuickForm();
       });
@@ -102,6 +104,9 @@ export default function TemplatePicker({ open, onOpenChange, onSelect }: Templat
   }
 
   const filtered = templates.filter((t) => {
+    // kategori filtresi
+    if (selectedCategory && t.category !== selectedCategory) return false;
+    // arama filtresi
     if (!search.trim()) return true;
     const q = search.toLowerCase();
     return (
@@ -124,6 +129,35 @@ export default function TemplatePicker({ open, onOpenChange, onSelect }: Templat
         <DialogHeader>
           <DialogTitle>Şablon Ekle</DialogTitle>
         </DialogHeader>
+
+        {/* Category Filters */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          <button
+            type="button"
+            onClick={() => setSelectedCategory(null)}
+            className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
+              !selectedCategory
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-200 hover:border-blue-300'
+            }`}
+          >
+            Tümü
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setSelectedCategory(cat === selectedCategory ? null : cat)}
+              className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
+                selectedCategory === cat
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-gray-700 border-gray-200 hover:border-blue-300'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
 
         <Input
           placeholder="Şablon ara..."
