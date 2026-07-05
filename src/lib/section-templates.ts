@@ -1,6 +1,24 @@
 import { getSupabase } from './supabase';
 import type { SectionTemplate } from '@/types';
 
+export async function getCategories(): Promise<string[]> {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from('section_templates')
+    .select('category')
+    .order('category', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching categories:', error);
+    return [];
+  }
+
+  const unique = [...new Set<string>((data || []).map((r) => r.category))];
+  return unique;
+}
+
 export async function getSectionTemplates(): Promise<SectionTemplate[]> {
   const supabase = getSupabase();
   if (!supabase) return [];
