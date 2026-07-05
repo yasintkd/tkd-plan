@@ -1,5 +1,5 @@
 -- Programlar tablosu
-CREATE TABLE programs (
+CREATE TABLE IF NOT EXISTS programs (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   sections JSONB DEFAULT '[]'::jsonb,
@@ -8,7 +8,7 @@ CREATE TABLE programs (
 );
 
 -- Seanslar tablosu
-CREATE TABLE sessions (
+CREATE TABLE IF NOT EXISTS sessions (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   program_id UUID REFERENCES programs(id) ON DELETE SET NULL,
   date DATE NOT NULL,
@@ -21,12 +21,12 @@ CREATE TABLE sessions (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- İndeksler
-CREATE INDEX idx_sessions_date ON sessions(date);
-CREATE INDEX idx_sessions_program_id ON sessions(program_id);
+-- İndeksler (indeksler IF NOT EXISTS desteklemez, önce kontrol et)
+CREATE INDEX IF NOT EXISTS idx_sessions_date ON sessions(date);
+CREATE INDEX IF NOT EXISTS idx_sessions_program_id ON sessions(program_id);
 
 -- Drill şablonları (mikro parçalar)
-CREATE TABLE section_templates (
+CREATE TABLE IF NOT EXISTS section_templates (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   title TEXT NOT NULL,
   category TEXT NOT NULL DEFAULT 'genel',
@@ -35,4 +35,4 @@ CREATE TABLE section_templates (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE INDEX idx_section_templates_category ON section_templates(category);
+CREATE INDEX IF NOT EXISTS idx_section_templates_category ON section_templates(category);

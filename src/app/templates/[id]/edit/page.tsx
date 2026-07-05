@@ -2,22 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { getSectionTemplate, updateSectionTemplate } from '@/lib/section-templates';
+import { getSectionTemplate, updateSectionTemplate, getCategories } from '@/lib/section-templates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-const CATEGORIES = [
-  { value: 'isinma', label: 'Isınma' },
-  { value: 'raket', label: 'Raket Çalışması' },
-  { value: 'kuvvet', label: 'Kuvvet' },
-  { value: 'teknik', label: 'Teknik' },
-  { value: 'soguma', label: 'Soğuma' },
-  { value: 'esneklik', label: 'Esneklik / Germe' },
-  { value: 'genel', label: 'Genel' },
-];
 
 export default function EditTemplatePage() {
   const router = useRouter();
@@ -25,29 +14,45 @@ export default function EditTemplatePage() {
   const id = params.id as string;
 
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('genel');
+  const [category, setCategory] = useState('');
   const [drills, setDrills] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [newCategory, setNewCategory] = useState('');
 
   useEffect(() => {
-    getSectionTemplate(id).then((template) => {
+    Promise.all([getSectionTemplate(id), getCategories()]).then(([template, cats]) => {
       if (template) {
         setTitle(template.title);
         setCategory(template.category);
         setDrills(template.drills);
       }
+      setCategories(cats);
       setLoading(false);
     });
   }, [id]);
 
+  function handleCategorySelect(cat: string) {
+    if (cat === '__new__') {
+      setShowNewCategory(true);
+      setCategory('');
+    } else {
+      setShowNewCategory(false);
+      setCategory(cat);
+      setNewCategory('');
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim()) return;
+    const finalCategory = newCategory.trim() || category.trim();
+    if (!title.trim() || !finalCategory) return;
 
     setSaving(true);
     try {
-      const template = await updateSectionTemplate(id, title.trim(), category, drills.trim());
+      const template = await updateSectionTemplate(id, title.trim(), finalCategory, drills.trim());
       if (template) {
         router.push('/templates');
       } else {
@@ -80,19 +85,44 @@ export default function EditTemplatePage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="category">Kategori</Label>
-          <Select value={category} onValueChange={(v) => { if (v !== null) setCategory(v) }}>
-            <SelectTrigger>
-              <SelectValue placeholder="Kategori seçin" />
-            </SelectTrigger>
-            <SelectContent>
-              {CATEGORIES.map((cat) => (
-                <SelectItem key={cat.value} value={cat.value}>
-                  {cat.label}
-                </SelectItem>
+          <Label>Kategori</Label>
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-1.5">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => handleCategorySelect(cat)}
+                  className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                    category === cat && !showNewCategory
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-gray-700 border-gray-200 hover:border-blue-300'
+                  }`}
+                >
+                  {cat}
+                </button>
               ))}
-            </SelectContent>
-          </Select>
+              <button
+                type="button"
+                onClick={() => handleCategorySelect('__new__')}
+                className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                  showNewCategory
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-white text-gray-700 border-gray-200 hover:border-blue-300'
+                }`}
+              >
+                + Yeni
+              </button>
+            </div>
+            {showNewCategory && (
+              <Input
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                placeholder="Yeni kategori adı (örn: Dayanıklılık)"
+                autoFocus
+              />
+            )}
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -107,7 +137,7 @@ export default function EditTemplatePage() {
         </div>
 
         <div className="flex gap-3">
-          <Button type="submit" disabled={saving || !title.trim()}>
+          <Button type="submit" disabled={saving || !title.trim() || (!category && !newCategory)}>
             {saving ? 'Kaydediliyor...' : 'Kaydet'}
           </Button>
           <Button type="button" variant="outline" onClick={() => router.back()}>
