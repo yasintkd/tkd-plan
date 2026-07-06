@@ -95,7 +95,7 @@ export async function getYcSyncedSessions(
 
     for (const sched of matchingSchedules) {
       // Çakışma kontrolü: aynı tarih + aynı saatte session varsa atla
-      if (existingKeySet.has(`${dayStr}_${sched.start_time}`)) continue;
+      if (existingKeySet.has(`${dayStr}_${sched.start_time.slice(0, 5)}`)) continue;
 
       const group = groupMap.get(sched.group_id);
       const durationMin = calculateDurationMinutes(sched.start_time, sched.end_time);

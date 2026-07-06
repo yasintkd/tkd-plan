@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { getSessionsByDateRange } from '@/lib/sessions';
+import { getSessionsByDateRange, updateSessionProgram } from '@/lib/sessions';
 import { getYcSyncedSessions, createSessionFromYcSchedule } from '@/lib/yc-sessions';
 import { getPrograms } from '@/lib/programs';
 import type { Session, YcSyncedSession, Program } from '@/types';
@@ -37,7 +37,7 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  // Program atama dialog state
+  // Program atama dialog state (yc -> tkd)
   const [assignDialog, setAssignDialog] = useState<{
     open: boolean;
     ycSession: YcSyncedSession | null;
@@ -48,6 +48,21 @@ export default function CalendarPage() {
     ycSession: null,
     selectedProgramId: '',
     assigning: false,
+  });
+
+  // Program değiştirme/kaldırma dialog state (mevcut tkd session)
+  const [changeDialog, setChangeDialog] = useState<{
+    open: boolean;
+    sessionId: string | null;
+    currentProgramId: string | null;
+    selectedProgramId: string;
+    saving: boolean;
+  }>({
+    open: false,
+    sessionId: null,
+    currentProgramId: null,
+    selectedProgramId: 'none',
+    saving: false,
   });
 
   const getDateRange = useCallback(() => {
@@ -185,6 +200,46 @@ export default function CalendarPage() {
     } else {
       setAssignDialog((prev) => ({ ...prev, assigning: false }));
       alert('Program atanırken bir hata oluştu.');
+    }
+  }
+
+  // Program değiştir dialog'u aç
+  function openChangeDialog(session: CalendarSession) {
+    setChangeDialog({
+      open: true,
+      sessionId: session.id,
+      currentProgramId: session.program?.id ?? null,
+      selectedProgramId: session.program?.id ?? 'none',
+      saving: false,
+    });
+  }
+
+  // Programı değiştir veya kaldır
+  async function handleChangeProgram() {
+    if (!changeDialog.sessionId) return;
+
+    setChangeDialog((prev) => ({ ...prev, saving: true }));
+
+    const programId = changeDialog.selectedProgramId === 'none' ? null : changeDialog.selectedProgramId;
+    const result = await updateSessionProgram(changeDialog.sessionId, programId);
+
+    if (result) {
+      setChangeDialog({ open: false, sessionId: null, currentProgramId: null, selectedProgramId: 'none', saving: false });
+
+      // Verileri yenile
+      const range = getDateRange();
+      const startStr = format(range.start, 'yyyy-MM-dd');
+      const endStr = format(range.end, 'yyyy-MM-dd');
+
+      const [tkdData, ycData] = await Promise.all([
+        getSessionsByDateRange(startStr, endStr),
+        getYcSyncedSessions(startStr, endStr),
+      ]);
+      setTkdSessions(tkdData);
+      setYcSessions(ycData);
+    } else {
+      setChangeDialog((prev) => ({ ...prev, saving: false }));
+      alert('Program güncellenirken bir hata oluştu.');
     }
   }
 
@@ -352,9 +407,9 @@ export default function CalendarPage() {
                   </Card>
                 ) : (
                   // tkd-plan'in kendi seansı
-                  <Link href={`/sessions/${session.id}`}>
-                    <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                      <CardContent className="py-3 flex items-center justify-between">
+                  <Card className="hover:shadow-md transition-shadow">
+                    <CardContent className="py-3 flex items-center justify-between">
+                      <Link href={`/sessions/${session.id}`} className="flex-1 min-w-0">
                         <div>
                           <p className="font-semibold">
                             {session.start_time.slice(0, 5)}
@@ -365,13 +420,24 @@ export default function CalendarPage() {
                           </p>
                         </div>
                         {session.notes && (
-                          <span className="text-xs text-gray-400 italic max-w-[150px] truncate">
+                          <span className="text-xs text-gray-400 italic max-w-[150px] truncate block mt-1">
                             {session.notes}
                           </span>
                         )}
-                      </CardContent>
-                    </Card>
-                  </Link>
+                      </Link>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          openChangeDialog(session);
+                        }}
+                        className="ml-3 shrink-0"
+                      >
+                        Programı Değiştir
+                      </Button>
+                    </CardContent>
+                  </Card>
                 )}
               </div>
             ))
@@ -439,6 +505,64 @@ export default function CalendarPage() {
               disabled={assignDialog.assigning || !assignDialog.selectedProgramId || programs.length === 0}
             >
               {assignDialog.assigning ? 'Atanıyor...' : 'Programı Ata'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Program Değiştir/Kaldır Dialog */}
+      <Dialog
+        open={changeDialog.open}
+        onOpenChange={(open) => {
+          if (!open) {
+            setChangeDialog({ open: false, sessionId: null, currentProgramId: null, selectedProgramId: 'none', saving: false });
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Programı Değiştir</DialogTitle>
+            <DialogDescription>
+              Bu seansa ait programı değiştirebilir veya tamamen kaldırabilirsiniz.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2">
+            <Label htmlFor="change-program-select">Antrenman Programı</Label>
+            <select
+              id="change-program-select"
+              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm"
+              value={changeDialog.selectedProgramId}
+              onChange={(e) =>
+                setChangeDialog((prev) => ({ ...prev, selectedProgramId: e.target.value }))
+              }
+            >
+              <option value="none">Programsız</option>
+              {programs.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+            {changeDialog.selectedProgramId === 'none' && changeDialog.currentProgramId && (
+              <p className="text-xs text-amber-600">
+                Program kaldırılacak, seans programsız olarak görünecek.
+              </p>
+            )}
+            {changeDialog.selectedProgramId !== 'none' && changeDialog.currentProgramId && changeDialog.selectedProgramId !== changeDialog.currentProgramId && (
+              <p className="text-xs text-blue-600">
+                Program değiştirilecek.
+              </p>
+            )}
+          </div>
+
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline">İptal</Button>} />
+            <Button
+              onClick={handleChangeProgram}
+              disabled={changeDialog.saving}
+            >
+              {changeDialog.saving ? 'Kaydediliyor...' : 'Kaydet'}
             </Button>
           </DialogFooter>
         </DialogContent>
