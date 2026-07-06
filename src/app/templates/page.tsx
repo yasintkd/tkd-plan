@@ -137,8 +137,12 @@ export default function TemplatesPage() {
               <span className="text-xs text-gray-400 font-normal">({items.length})</span>
             </h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {items.map((template) => (
-                <div key={template.id} className="relative bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors overflow-hidden group">
+               {items.map((template) => (
+                <div
+                  key={template.id}
+                  className="relative bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors overflow-hidden cursor-pointer group"
+                  onClick={() => router.push(`/templates/${template.id}`)}
+                >
                   {/* Sol mavi aksan çizgisi */}
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500" />
                   <div className="pl-4 p-3 space-y-2">
@@ -146,7 +150,7 @@ export default function TemplatesPage() {
                       <h3 className="font-medium text-sm leading-snug text-gray-900">
                         {template.title}
                       </h3>
-                      <div className="flex gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
                         <button
                           className="text-xs text-gray-400 hover:text-blue-600 px-1.5 py-0.5 rounded hover:bg-blue-50 transition-colors"
                           onClick={() => router.push(`/templates/${template.id}/edit`)}
