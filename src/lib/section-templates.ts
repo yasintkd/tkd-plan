@@ -1,4 +1,5 @@
 import { getSupabase } from './supabase';
+import { syncProgramSectionsByTemplate } from './programs';
 import type { SectionTemplate } from '@/types';
 
 export async function getCategories(): Promise<string[]> {
@@ -89,6 +90,12 @@ export async function updateSectionTemplate(id: string, title: string, category:
     return null;
   }
 
+  // Bu şablonu kullanan programları da güncelle
+  const syncOk = await syncProgramSectionsByTemplate(id, { title, drills });
+  if (!syncOk) {
+    console.warn(`Program sections sync partially failed for template ${id}, but template was updated.`);
+  }
+
   return data;
 }
 
@@ -106,6 +113,12 @@ export async function deleteSectionTemplate(id: string): Promise<boolean> {
     return false;
   }
 
+  // Bu şablonu kullanan programlardaki template_id referanslarını kaldır
+  const syncOk = await syncProgramSectionsByTemplate(id, null);
+  if (!syncOk) {
+    console.warn(`Program sections sync failed for deleted template ${id}, but template was deleted.`);
+  }
+
   return true;
 }
 
@@ -113,16 +126,19 @@ export async function deleteCategory(category: string): Promise<{ success: boole
   const supabase = getSupabase();
   if (!supabase) return { success: false, count: 0 };
 
-  // Önce kaç şablon silineceğini bul
-  const { count, error: countError } = await supabase
+  // Önce hangi şablonların silineceğini bul (ID'lerini al)
+  const { data: templatesToDelete, error: fetchError } = await supabase
     .from('section_templates')
-    .select('*', { count: 'exact', head: true })
+    .select('id')
     .eq('category', category);
 
-  if (countError) {
-    console.error('Error counting templates in category:', countError);
+  if (fetchError) {
+    console.error('Error fetching templates in category:', fetchError);
     return { success: false, count: 0 };
   }
+
+  const ids = (templatesToDelete || []).map((t) => t.id);
+  const count = ids.length;
 
   // Tüm şablonları sil
   const { error } = await supabase
@@ -132,8 +148,16 @@ export async function deleteCategory(category: string): Promise<{ success: boole
 
   if (error) {
     console.error('Error deleting category:', error);
-    return { success: false, count: count || 0 };
+    return { success: false, count };
   }
 
-  return { success: true, count: count || 0 };
+  // Her bir silinen şablon için program referanslarını temizle
+  for (const id of ids) {
+    const syncOk = await syncProgramSectionsByTemplate(id, null);
+    if (!syncOk) {
+      console.warn(`Program sections sync failed for deleted template ${id} (category: ${category}).`);
+    }
+  }
+
+  return { success: true, count };
 }

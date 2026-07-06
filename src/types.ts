@@ -1,6 +1,7 @@
 export interface Section {
   title: string;
   drills: string;
+  template_id?: string;
 }
 
 export interface Program {

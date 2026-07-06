@@ -67,6 +67,7 @@ export default function TemplatePicker({ open, onOpenChange, onSelect }: Templat
     const sections: Section[] = selected.map((t) => ({
       title: t.title,
       drills: t.drills,
+      template_id: t.id,
     }));
     onSelect(sections);
     onOpenChange(false);
