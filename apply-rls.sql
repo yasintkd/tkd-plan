@@ -1,4 +1,20 @@
--- Programlar tablosu
+-- Bu SQL'in TAMAMINI Supabase Studio > SQL Editor'da çalıştır.
+-- Tablolar zaten varsa IF NOT EXISTS sayesinde tekrar oluşturmaz.
+-- Hata alırsan -- ile başlayan satırları tek tek seçip çalıştır.
+
+-- ÖNCE: Tüm RLS'leri kapat (mevcut policy varsa çakışma olmasın)
+DROP POLICY IF EXISTS "admin_all_profiles" ON profiles;
+DROP POLICY IF EXISTS "own_profile" ON profiles;
+DROP POLICY IF EXISTS "admin_all_assignments" ON session_assignments;
+DROP POLICY IF EXISTS "own_assignments" ON session_assignments;
+DROP POLICY IF EXISTS "admin_all_sessions" ON sessions;
+DROP POLICY IF EXISTS "assigned_sessions" ON sessions;
+DROP POLICY IF EXISTS "admin_all_programs" ON programs;
+DROP POLICY IF EXISTS "no_programs_for_non_admin" ON programs;
+DROP POLICY IF EXISTS "admin_all_templates" ON section_templates;
+DROP POLICY IF EXISTS "no_templates_for_non_admin" ON section_templates;
+
+-- Tablolar (zaten varsa oluşturmaz)
 CREATE TABLE IF NOT EXISTS programs (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
@@ -7,7 +23,6 @@ CREATE TABLE IF NOT EXISTS programs (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Seanslar tablosu
 CREATE TABLE IF NOT EXISTS sessions (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   program_id UUID REFERENCES programs(id) ON DELETE SET NULL,
@@ -21,11 +36,9 @@ CREATE TABLE IF NOT EXISTS sessions (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- İndeksler
 CREATE INDEX IF NOT EXISTS idx_sessions_date ON sessions(date);
 CREATE INDEX IF NOT EXISTS idx_sessions_program_id ON sessions(program_id);
 
--- Drill şablonları (mikro parçalar)
 CREATE TABLE IF NOT EXISTS section_templates (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   title TEXT NOT NULL,
@@ -37,8 +50,6 @@ CREATE TABLE IF NOT EXISTS section_templates (
 
 CREATE INDEX IF NOT EXISTS idx_section_templates_category ON section_templates(category);
 
--- ─── Auth / Kullanıcı Rolleri ───────────────────────────────────────────────
-
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT,
@@ -49,17 +60,6 @@ CREATE TABLE IF NOT EXISTS profiles (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-
--- Admin her şeyi görebilir
-CREATE POLICY "admin_all_profiles" ON profiles
-  FOR ALL USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
-
--- Kullanıcı kendi profilini görebilir
-CREATE POLICY "own_profile" ON profiles
-  FOR SELECT USING (auth.uid() = id);
-
--- Session atamaları: bir session'ı kimler görebilir
 CREATE TABLE IF NOT EXISTS session_assignments (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
@@ -68,18 +68,25 @@ CREATE TABLE IF NOT EXISTS session_assignments (
   UNIQUE(session_id, user_id)
 );
 
+-- RLS aktifleştir
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE session_assignments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE programs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE section_templates ENABLE ROW LEVEL SECURITY;
 
--- Admin tüm atamaları görebilir
+-- Politikalar
+CREATE POLICY "admin_all_profiles" ON profiles
+  FOR ALL USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
+
+CREATE POLICY "own_profile" ON profiles
+  FOR SELECT USING (auth.uid() = id);
+
 CREATE POLICY "admin_all_assignments" ON session_assignments
   FOR ALL USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
 
--- Kullanıcı kendi atamalarını görebilir
 CREATE POLICY "own_assignments" ON session_assignments
   FOR SELECT USING (auth.uid() = user_id);
-
--- Session'lar için RLS: admin tümünü görür, assistant/guest sadece atanmış olduklarını
-ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "admin_all_sessions" ON sessions
   FOR ALL USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
@@ -89,20 +96,19 @@ CREATE POLICY "assigned_sessions" ON sessions
     auth.uid() IN (SELECT user_id FROM session_assignments WHERE session_id = sessions.id)
   );
 
--- Programlar için RLS: admin tümünü görür, assistant/guest hiçbirini görmez
-ALTER TABLE programs ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "admin_all_programs" ON programs
   FOR ALL USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
 
 CREATE POLICY "no_programs_for_non_admin" ON programs
   FOR SELECT USING (false);
 
--- Section templates için RLS: admin tümünü görür
-ALTER TABLE section_templates ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "admin_all_templates" ON section_templates
   FOR ALL USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
 
 CREATE POLICY "no_templates_for_non_admin" ON section_templates
   FOR SELECT USING (false);
+
+-- SONRA: kendini admin yap (ilk giren kullanıcı)
+UPDATE profiles
+SET role = 'admin', status = 'approved'
+WHERE id = (SELECT id FROM auth.users ORDER BY created_at ASC LIMIT 1);

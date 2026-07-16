@@ -1,0 +1,7 @@
+-- Tüm RLS'yi geçici kapat (test için)
+-- Supabase Studio > SQL Editor'da çalıştır
+ALTER TABLE profiles DISABLE ROW LEVEL SECURITY;
+ALTER TABLE sessions DISABLE ROW LEVEL SECURITY;
+ALTER TABLE session_assignments DISABLE ROW LEVEL SECURITY;
+ALTER TABLE programs DISABLE ROW LEVEL SECURITY;
+ALTER TABLE section_templates DISABLE ROW LEVEL SECURITY;

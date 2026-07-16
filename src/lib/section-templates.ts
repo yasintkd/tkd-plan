@@ -1,4 +1,4 @@
-import { getSupabase } from './supabase';
+ import { getSupabase } from './supabase';
 import { syncProgramSectionsByTemplate } from './programs';
 import type { SectionTemplate } from '@/types';
 

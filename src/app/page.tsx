@@ -1,127 +1,51 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSessionsByDate } from '@/lib/sessions';
-import { getPrograms } from '@/lib/programs';
-import type { Session } from '@/types';
-import { format } from 'date-fns';
-import { tr } from 'date-fns/locale';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useAuth } from '@/lib/auth';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function HomePage() {
   const router = useRouter();
-  const [todaySessions, setTodaySessions] = useState<Session[]>([]);
-  const [programCount, setProgramCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-
-  const today = format(new Date(), 'yyyy-MM-dd');
-  const todayDisplay = format(new Date(), 'dd MMMM yyyy', { locale: tr });
+  const { user, profile, loading, signInWithGoogle } = useAuth();
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [sessions, programs] = await Promise.all([
-          getSessionsByDate(today),
-          getPrograms(),
-        ]);
-        setTodaySessions(sessions);
-        setProgramCount(programs.length);
-      } catch (err) {
-        console.error('Ana sayfa verileri yüklenirken hata:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, [today]);
+    if (loading) return;
+    if (user) router.push('/dashboard');
+  }, [user, loading, router]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Bugünün Antrenmanları</h1>
-          <p className="text-gray-500 text-sm">{todayDisplay}</p>
-        </div>
-        <div className="flex gap-2">
-          <Link href="/programs/new">
-            <Button variant="outline">Yeni Program</Button>
-          </Link>
-          <Link href="/calendar">
-            <Button>Takvime Git</Button>
-          </Link>
-        </div>
-      </div>
-
-      {loading ? (
-        <p className="text-gray-400">Yükleniyor...</p>
-      ) : todaySessions.length === 0 ? (
-        <Card>
-          <CardContent className="py-8 text-center text-gray-500">
-            <p>Bugün için planlanmış antrenman yok.</p>
-            <Link href={`/sessions/new?date=${today}`}>
-              <Button variant="link" className="mt-2">Yeni Seans Oluştur</Button>
-            </Link>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {todaySessions.map((session) => (
-            <div
-              key={session.id}
-              onClick={() => router.push(`/sessions/${session.id}`)}
-              className="cursor-pointer"
-            >
-              <Card className="hover:shadow-md transition-shadow">
-                <CardContent className="py-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-lg font-semibold">
-                      {session.start_time.slice(0, 5)}
-                      {session.duration_min ? ` (${session.duration_min} dk)` : ''}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {session.program ? session.program.name : 'Programsız'}
-                    </p>
-                  </div>
-                  {session.notes && (
-                    <span className="text-xs text-gray-400 italic max-w-[200px] truncate">
-                      {session.notes}
-                    </span>
-                  )}
-                </CardContent>
-              </Card>
+    <div className="min-h-[80vh] flex items-center justify-center">
+      <Card className="w-full max-w-sm">
+        <CardContent className="p-8 text-center space-y-6">
+          <div className="space-y-2">
+            <div className="mx-auto w-16 h-16 bg-blue-900 rounded-full flex items-center justify-center">
+              <span className="text-2xl font-bold text-white">TKD</span>
             </div>
-          ))}
-        </div>
-      )}
+            <h1 className="text-2xl font-bold">TKD Plan</h1>
+            <p className="text-gray-500 text-sm">Taekwondo antrenman planlayıcı</p>
+          </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div
-          onClick={() => router.push('/programs')}
-          className="cursor-pointer"
-        >
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Program Havuzu</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-blue-900">{programCount}</p>
-              <p className="text-sm text-gray-500">kayıtlı program</p>
-            </CardContent>
-          </Card>
-        </div>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Bugünkü Seans</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-blue-900">{todaySessions.length}</p>
-            <p className="text-sm text-gray-500">planlanmış antrenman</p>
-          </CardContent>
-        </Card>
-      </div>
+          <button
+            onClick={signInWithGoogle}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Google ile giriş yap
+          </button>
+
+          <p className="text-xs text-gray-400">
+            Giriş yaparak geçerli hesabınla erişim sağlarsın.
+            Admin onayı gereklidir.
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }

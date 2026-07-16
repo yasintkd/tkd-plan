@@ -39,6 +39,21 @@ export interface SessionFormData {
   recurrence_end_date: string | null;
 }
 
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+
+export type Role = 'admin' | 'assistant' | 'guest';
+export type ProfileStatus = 'pending' | 'approved' | 'rejected';
+
+export interface Profile {
+  id: string;
+  email: string | null;
+  display_name: string | null;
+  role: Role;
+  status: ProfileStatus;
+  created_at: string;
+  updated_at: string;
+}
+
 // ─── yc-team-tkd types (salon yönetimi) ────────────────────────────────────
 
 export interface YcTrainingGroup {

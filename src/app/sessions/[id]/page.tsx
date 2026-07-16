@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { getSession, updateSessionNotes, deleteSession, updateSessionProgram } from '@/lib/sessions';
 import { getPrograms } from '@/lib/programs';
-import type { Session, Program } from '@/types';
+import { useAuth } from '@/lib/auth';
+import { getAssignments, addAssignment, removeAssignment, getApprovedUsers } from '@/lib/assignments';
+import type { Session, Program, Profile } from '@/types';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -22,9 +24,21 @@ export default function SessionDetailPage() {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [notes, setNotes] = useState('');
   const [selectedProgramId, setSelectedProgramId] = useState<string>('none');
+  const { profile } = useAuth();
+  const isAdmin = profile?.role === 'admin';
+  const [assignedUsers, setAssignedUsers] = useState<Profile[]>([]);
+  const [availableUsers, setAvailableUsers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingNotes, setSavingNotes] = useState(false);
   const [savingProgram, setSavingProgram] = useState(false);
+
+  const loadAssignments = useCallback(async () => {
+    if (!isAdmin) return;
+    const [assigned, allUsers] = await Promise.all([getAssignments(id), getApprovedUsers()]);
+    setAssignedUsers(assigned);
+    const assignedIds = new Set(assigned.map(u => u.id));
+    setAvailableUsers(allUsers.filter(u => !assignedIds.has(u.id) && u.role !== 'admin'));
+  }, [id, isAdmin]);
 
   useEffect(() => {
     Promise.all([getSession(id), getPrograms()]).then(([sessionData, programsData]) => {
@@ -37,6 +51,8 @@ export default function SessionDetailPage() {
       setLoading(false);
     });
   }, [id]);
+
+  useEffect(() => { loadAssignments(); }, [loadAssignments]);
 
   async function handleSaveNotes() {
     setSavingNotes(true);
@@ -114,6 +130,37 @@ export default function SessionDetailPage() {
           {savingProgram && <p className="text-xs text-gray-400">Kaydediliyor...</p>}
         </CardContent>
       </Card>
+
+      {/* User assignments (admin only) */}
+      {isAdmin && (
+        <Card>
+          <CardContent className="pt-4 space-y-3">
+            <Label>Atanan Kullanıcılar</Label>
+            {assignedUsers.length === 0 && <p className="text-sm text-gray-500">Henüz kimse atanmamış.</p>}
+            <div className="flex flex-wrap gap-2">
+              {assignedUsers.map(u => (
+                <span key={u.id} className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                  {u.display_name || u.email}
+                  <button onClick={async () => { await removeAssignment(id, u.id); loadAssignments(); }} className="hover:text-red-600 ml-1">&times;</button>
+                </span>
+              ))}
+            </div>
+            {availableUsers.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {availableUsers.map(u => (
+                  <button
+                    key={u.id}
+                    onClick={async () => { await addAssignment(id, u.id); loadAssignments(); }}
+                    className="text-xs border border-dashed border-gray-300 px-2 py-1 rounded-full hover:bg-gray-100"
+                  >
+                    + {u.display_name || u.email}
+                  </button>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Program drill list */}
       {session.program && session.program.sections && session.program.sections.length > 0 && (
