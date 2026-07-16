@@ -49,17 +49,17 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold">Bugünün Antrenmanları</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Bugünün Antrenmanları</h1>
           <p className="text-gray-500 text-sm">{todayDisplay}</p>
         </div>
-        <div className="flex gap-2">
-          <Link href="/programs/new">
-            <Button variant="outline">Yeni Program</Button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Link href="/programs/new" className="flex-1 sm:flex-initial">
+            <Button variant="outline" className="w-full sm:w-auto">Yeni Program</Button>
           </Link>
-          <Link href="/calendar">
-            <Button>Takvime Git</Button>
+          <Link href="/calendar" className="flex-1 sm:flex-initial">
+            <Button className="w-full sm:w-auto">Takvime Git</Button>
           </Link>
         </div>
       </div>

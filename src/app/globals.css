@@ -118,8 +118,6 @@
 }
 
 /* ===== SAFE AREA (Notch / Dynamic Island) ===== */
-
-/* Safe area padding variables for iOS notch */
 :root {
   --safe-area-top: env(safe-area-inset-top, 0px);
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
@@ -127,7 +125,6 @@
   --safe-area-right: env(safe-area-inset-right, 0px);
 }
 
-/* Utility classes */
 .safe-area-top {
   padding-top: var(--safe-area-top);
 }
@@ -144,7 +141,7 @@
   padding-right: var(--safe-area-right);
 }
 
-/* Full viewport height using dynamic viewport units (iOS Safari) */
+/* dvh for iOS Safari */
 .min-h-screen {
   min-height: 100vh;
   min-height: 100dvh;
@@ -155,45 +152,138 @@
   height: 100dvh;
 }
 
-/* ===== MOBILE OPTIMIZATIONS ===== */
-
-/* Prevent double-tap zoom and iOS text size adjust on input focus */
+/* ===== BASE MOBILE TWEAKS ===== */
 html {
   -webkit-text-size-adjust: 100%;
-  -moz-text-size-adjust: 100%;
   text-size-adjust: 100%;
   overflow-x: hidden;
-}
-
-/* Prevent 300ms tap delay and double-tap zoom on all interactive elements */
-* {
   -webkit-tap-highlight-color: transparent;
 }
 
-a, button, input, select, textarea, [role="button"], label {
-  touch-action: manipulation;
+/* All interactive elements get minimum 44px touch target on mobile */
+@media (max-width: 768px) {
+  button,
+  a:not(.no-touch-target),
+  [role="button"],
+  .btn-like,
+  label,
+  select,
+  input[type="submit"],
+  input[type="button"],
+  input[type="reset"] {
+    min-height: 44px;
+  }
+  /* Square icon buttons */
+  .icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
-/* Prevent text selection on UI elements for better mobile feel */
-button, a, select, [role="button"] {
+/* Disable callout on UI elements */
+button, a, select, [role="button"], label {
+  -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
 }
 
-/* Allow text selection on inputs and textareas */
 input, textarea {
   -webkit-user-select: auto;
   user-select: auto;
 }
 
-/* Disable callout (long-press link menu) on iOS */
-* {
-  -webkit-touch-callout: none;
+/* Prevent iOS zoom on input focus */
+input, textarea, select {
+  font-size: 16px !important;
 }
 
-/* Enable callout on text content */
-p, h1, h2, h3, h4, h5, h6, span, div.text-content {
-  -webkit-touch-callout: default;
+/* ===== SCROLLBAR ===== */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.overflow-x-auto {
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Horizontal scroll snap for mobile category filters etc */
+.scroll-snap-x {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.scroll-snap-x > * {
+  scroll-snap-align: start;
+}
+
+/* ===== RESPONSIVE TYPOGRAPHY ===== */
+html {
+  font-size: 16px;
+}
+
+@media (max-width: 360px) {
+  html { font-size: 15px; }
+}
+
+/* Improve paragraph readability on mobile */
+@media (max-width: 640px) {
+  p, li, .text-sm {
+    line-height: 1.6;
+  }
+}
+
+/* ===== DIALOG / SHEET MOBILE FULLSCREEN ===== */
+@media (max-width: 640px) {
+  [role="dialog"] {
+    max-width: calc(100% - 1rem) !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    border-radius: 0.75rem !important;
+    max-height: 90dvh !important;
+    overflow-y: auto;
+  }
+  /* Dialog content padding reduction on mobile */
+  [role="dialog"] > div {
+    padding: 1rem !important;
+  }
+}
+
+/* ===== CARD HOVER TOUCH FEEDBACK ===== */
+@media (hover: none) {
+  .card-hover:active {
+    background-color: var(--muted);
+    transition: background-color 0.1s;
+  }
+}
+
+/* ===== SKELETON LOADING ===== */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+.skeleton {
+  background: oklch(0.87 0 0);
+  border-radius: 0.25rem;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* ===== BETTER CHECKBOX/RADIO TOUCH ===== */
+input[type="checkbox"],
+input[type="radio"] {
+  min-width: 20px;
+  min-height: 20px;
+}
+
+/* ===== SAFE BOTTOM PADDING FOR STICKY NAV ===== */
+.safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 0.5rem);
 }
 
 @layer base {

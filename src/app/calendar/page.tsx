@@ -244,16 +244,17 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Takvim</h1>
+    <div className="space-y-4 sm:space-y-6">
+      <h1 className="text-xl sm:text-2xl font-bold">Takvim</h1>
 
       {/* View toggle and navigation */}
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex gap-1 sm:gap-2">
           <Button
             variant={viewMode === 'month' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('month')}
+            className="text-xs sm:text-sm h-9 sm:h-auto"
           >
             Aylık
           </Button>
@@ -261,27 +262,28 @@ export default function CalendarPage() {
             variant={viewMode === 'week' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('week')}
+            className="text-xs sm:text-sm h-9 sm:h-auto"
           >
             Haftalık
           </Button>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => navigate('prev')}>
+        <div className="flex items-center gap-1 sm:gap-2">
+          <Button variant="outline" size="sm" onClick={() => navigate('prev')} className="h-9 w-9 sm:h-auto sm:w-auto p-0 sm:px-3">
             ←
           </Button>
-          <span className="font-semibold text-sm min-w-[140px] text-center">
+          <span className="font-semibold text-xs sm:text-sm min-w-[120px] sm:min-w-[140px] text-center leading-tight">
             {viewMode === 'month'
               ? format(currentDate, 'MMMM yyyy', { locale: tr })
               : `${format(range.start, 'd MMM', { locale: tr })} - ${format(range.end, 'd MMM yyyy', { locale: tr })}`}
           </span>
-          <Button variant="outline" size="sm" onClick={() => navigate('next')}>
+          <Button variant="outline" size="sm" onClick={() => navigate('next')} className="h-9 w-9 sm:h-auto sm:w-auto p-0 sm:px-3">
             →
           </Button>
         </div>
       </div>
 
       {/* Lejant */}
-      <div className="flex items-center gap-4 text-xs text-gray-500">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
         <div className="flex items-center gap-1.5">
           <span className="inline-block w-3 h-3 rounded-full bg-blue-500" />
           <span>Programlı</span>
@@ -293,8 +295,8 @@ export default function CalendarPage() {
       </div>
 
       {/* Calendar grid */}
-      <Card>
-        <CardContent className="p-4">
+      <Card className="overflow-hidden">
+        <CardContent className="p-1 sm:p-4">
           {/* Day headers */}
           <div className="grid grid-cols-7 mb-2">
             {['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].map((day) => (
@@ -321,32 +323,26 @@ export default function CalendarPage() {
                   key={dayStr}
                   onClick={() => setSelectedDate(isSelected ? null : dayStr)}
                   className={`
-                    relative min-h-[60px] p-1 border border-gray-100 text-left transition-colors
+                    relative min-h-[52px] sm:min-h-[60px] p-0.5 sm:p-1 border border-gray-100 text-left transition-colors
                     ${isToday(day) ? 'bg-blue-50' : ''}
-                    ${isSelected ? 'ring-2 ring-blue-500 ring-inset' : ''}
+                    ${isSelected ? 'ring-1 sm:ring-2 ring-blue-500 ring-inset' : ''}
                     ${!isCurrentMonth ? 'text-gray-300' : 'hover:bg-gray-50'}
                   `}
                 >
-                  <span className={`text-xs font-medium ${isToday(day) ? 'text-blue-900' : ''}`}>
+                  <span className={`text-[11px] sm:text-xs font-medium ${isToday(day) ? 'text-blue-900' : ''}`}>
                     {format(day, 'd')}
                   </span>
                   {daySessions.length > 0 && (
-                    <div className="mt-1 space-y-0.5">
-                      {daySessions.slice(0, 3).map((s) => (
+                    <div className="mt-0.5 sm:mt-1 space-y-0.5">
+                      {daySessions.slice(0, 2).map((s) => (
                         <div
                           key={s.id}
-                          className={`w-full h-1.5 rounded-full ${s.isYcSource ? 'bg-amber-400' : 'bg-blue-500'} opacity-60`}
+                          className={`w-full h-1 sm:h-1.5 rounded-full ${s.isYcSource ? 'bg-amber-400' : 'bg-blue-500'} opacity-60`}
                           title={`${s.start_time.slice(0, 5)}${s.isYcSource ? ` - ${s.group_name} (Programsız)` : s.program ? ` - ${s.program.name}` : ''}`}
                         />
                       ))}
-                      {daySessions.length > 3 && (
-                        <span className="text-[10px] text-gray-400">+{daySessions.length - 3}</span>
-                      )}
-                      {/* İstatistik */}
-                      {programliCount > 0 && programsizCount > 0 && (
-                        <span className="text-[10px] text-gray-400 block">
-                          {programliCount}P / {programsizCount}S
-                        </span>
+                      {daySessions.length > 2 && (
+                        <span className="text-[9px] sm:text-[10px] text-gray-400">+{daySessions.length - 2}</span>
                       )}
                     </div>
                   )}
@@ -360,87 +356,92 @@ export default function CalendarPage() {
       {/* Selected day sessions */}
       {selectedDate && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <h2 className="text-base sm:text-lg font-semibold">
               {format(new Date(selectedDate + 'T12:00:00'), 'd MMMM yyyy', { locale: tr })}
             </h2>
-            <Link href={`/sessions/new?date=${selectedDate}`}>
-              <Button size="sm">+ Seans Ekle</Button>
+            <Link href={`/sessions/new?date=${selectedDate}`} className="w-full sm:w-auto">
+              <Button size="sm" className="w-full sm:w-auto">+ Seans Ekle</Button>
             </Link>
           </div>
 
           {selectedDateSessions.length === 0 ? (
             <p className="text-gray-400 text-sm">Bu günde seans bulunmuyor.</p>
           ) : (
-            selectedDateSessions.map((session) => (
-              <div key={session.id}>
-                {session.isYcSource ? (
-                  // yc-team-tkd kaynaklı (program atanabilir)
-                  <Card className="border-amber-200 hover:shadow-md transition-shadow">
-                    <CardContent className="py-3 flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="inline-block w-2 h-2 rounded-full bg-amber-400" />
-                          <p className="font-semibold text-sm">
-                            {session.start_time.slice(0, 5)}
-                            {session.duration_min ? ` (${session.duration_min} dk)` : ''}
-                          </p>
-                          <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
-                            {session.group_name}
-                          </span>
+            <div className="space-y-2">
+              {selectedDateSessions.map((session) => (
+                <div key={session.id}>
+                  {session.isYcSource ? (
+                    <Card className="border-amber-200 hover:shadow-md transition-shadow">
+                      <CardContent className="py-3 px-3 sm:px-4">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                          <div className="flex-1 min-w-0 w-full sm:w-auto">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className="inline-block w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+                              <p className="font-semibold text-sm">
+                                {session.start_time.slice(0, 5)}
+                                {session.duration_min ? ` (${session.duration_min} dk)` : ''}
+                              </p>
+                              <span className="text-[11px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                                {session.group_name}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-500 mt-0.5">Henüz program atanmamış</p>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full sm:w-auto"
+                            onClick={() => {
+                              const ycSession = ycSessions.find(
+                                (ys) => ys.id === session.id
+                              );
+                              if (ycSession) openAssignDialog(ycSession);
+                            }}
+                          >
+                            Program Ata
+                          </Button>
                         </div>
-                        <p className="text-sm text-gray-500 mt-1">Henüz program atanmamış</p>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          const ycSession = ycSessions.find(
-                            (ys) => ys.id === session.id
-                          );
-                          if (ycSession) openAssignDialog(ycSession);
-                        }}
-                      >
-                        Program Ata
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  // tkd-plan'in kendi seansı
-                  <Card className="hover:shadow-md transition-shadow">
-                    <CardContent className="py-3 flex items-center justify-between">
-                      <Link href={`/sessions/${session.id}`} className="flex-1 min-w-0">
-                        <div>
-                          <p className="font-semibold">
-                            {session.start_time.slice(0, 5)}
-                            {session.duration_min ? ` (${session.duration_min} dk)` : ''}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {session.program ? session.program.name : 'Programsız'}
-                          </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <Card className="hover:shadow-md transition-shadow">
+                      <CardContent className="py-3 px-3 sm:px-4">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                          <Link href={`/sessions/${session.id}`} className="flex-1 min-w-0 w-full sm:w-auto">
+                            <div>
+                              <p className="font-semibold text-sm sm:text-base">
+                                {session.start_time.slice(0, 5)}
+                                {session.duration_min ? ` (${session.duration_min} dk)` : ''}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {session.program ? session.program.name : 'Programsız'}
+                              </p>
+                            </div>
+                            {session.notes && (
+                              <span className="text-xs text-gray-400 italic truncate block mt-0.5 max-w-full">
+                                {session.notes}
+                              </span>
+                            )}
+                          </Link>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              openChangeDialog(session);
+                            }}
+                            className="w-full sm:w-auto shrink-0"
+                          >
+                            Programı Değiştir
+                          </Button>
                         </div>
-                        {session.notes && (
-                          <span className="text-xs text-gray-400 italic max-w-[150px] truncate block mt-1">
-                            {session.notes}
-                          </span>
-                        )}
-                      </Link>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          openChangeDialog(session);
-                        }}
-                        className="ml-3 shrink-0"
-                      >
-                        Programı Değiştir
-                      </Button>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            ))
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}

@@ -46,28 +46,28 @@ export default function AdminPage() {
   if (!user || profile?.role !== 'admin') return <div className="text-center p-8 text-gray-500">Yetkisiz erişim.</div>;
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-bold">Admin Paneli</h1>
+    <div className="space-y-6 sm:space-y-8 px-0 sm:px-0">
+      <h1 className="text-xl sm:text-2xl font-bold">Admin Paneli</h1>
 
       <section>
-        <h2 className="text-lg font-semibold mb-3">Onay Bekleyen Kullanıcılar ({pendingUsers.length})</h2>
+        <h2 className="text-base sm:text-lg font-semibold mb-3">Onay Bekleyen ({pendingUsers.length})</h2>
         {loadingUsers ? (
-          <p className="text-gray-500">Yükleniyor...</p>
+          <p className="text-gray-500 text-sm">Yükleniyor...</p>
         ) : pendingUsers.length === 0 ? (
-          <p className="text-gray-500">Onay bekleyen kullanıcı yok.</p>
+          <p className="text-gray-500 text-sm">Onay bekleyen yok.</p>
         ) : (
           <div className="space-y-2">
             {pendingUsers.map(p => (
-              <div key={p.id} className="flex items-center justify-between bg-white border rounded-lg p-3">
-                <div>
-                  <p className="font-medium">{p.display_name || 'İsimsiz'}</p>
-                  <p className="text-sm text-gray-500">{p.email}</p>
+              <div key={p.id} className="flex flex-col sm:flex-row sm:items-center justify-between bg-white border rounded-lg p-3 sm:p-3 gap-2">
+                <div className="min-w-0">
+                  <p className="font-medium text-sm sm:text-base truncate">{p.display_name || 'İsimsiz'}</p>
+                  <p className="text-xs sm:text-sm text-gray-500 truncate">{p.email}</p>
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={() => updateStatus(p.id, 'approved')} className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <button onClick={() => updateStatus(p.id, 'approved')} className="flex-1 sm:flex-none bg-green-600 text-white px-3 py-3 sm:py-1 rounded text-sm hover:bg-green-700 min-h-[44px] sm:min-h-0">
                     Onayla
                   </button>
-                  <button onClick={() => updateStatus(p.id, 'rejected')} className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">
+                  <button onClick={() => updateStatus(p.id, 'rejected')} className="flex-1 sm:flex-none bg-red-600 text-white px-3 py-3 sm:py-1 rounded text-sm hover:bg-red-700 min-h-[44px] sm:min-h-0">
                     Reddet
                   </button>
                 </div>
@@ -78,22 +78,22 @@ export default function AdminPage() {
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold mb-3">Onaylı Kullanıcılar ({approvedUsers.length})</h2>
+        <h2 className="text-base sm:text-lg font-semibold mb-3">Onaylı Kullanıcılar ({approvedUsers.length})</h2>
         {approvedUsers.length === 0 ? (
-          <p className="text-gray-500">Henüz onaylı kullanıcı yok.</p>
+          <p className="text-gray-500 text-sm">Henüz onaylı kullanıcı yok.</p>
         ) : (
           <div className="space-y-2">
               {approvedUsers.map(p => (
-                <div key={p.id} className="flex items-center justify-between bg-white border rounded-lg p-3">
-                  <div>
-                    <p className="font-medium">{p.display_name || 'İsimsiz'}</p>
-                    <p className="text-sm text-gray-500">{p.email}</p>
+                <div key={p.id} className="flex flex-col sm:flex-row sm:items-center justify-between bg-white border rounded-lg p-3 sm:p-3 gap-2">
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm sm:text-base truncate">{p.display_name || 'İsimsiz'}</p>
+                    <p className="text-xs sm:text-sm text-gray-500 truncate">{p.email}</p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
                     <select
                       value={p.role}
                       onChange={e => updateRole(p.id, e.target.value as Role)}
-                      className="text-xs border rounded px-2 py-1 bg-white"
+                      className="text-sm border rounded px-3 py-3 sm:py-1 bg-white w-full sm:w-auto min-h-[44px] sm:min-h-0"
                     >
                       <option value="guest">Misafir</option>
                       <option value="assistant">Yardımcı</option>

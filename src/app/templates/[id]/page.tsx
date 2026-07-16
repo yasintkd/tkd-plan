@@ -43,7 +43,7 @@ export default function TemplateDetailPage() {
   if (!template) {
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-bold">Şablon Bulunamadı</h1>
+        <h1 className="text-xl sm:text-2xl font-bold">Şablon Bulunamadı</h1>
         <p className="text-gray-500">Bu ID ile bir şablon bulunamadı.</p>
         <Button variant="outline" onClick={() => router.push('/templates')}>
           Şablonlara Dön
@@ -55,17 +55,18 @@ export default function TemplateDetailPage() {
   return (
     <div className="space-y-6">
       {/* Üst kısım: başlık + aksiyon butonları */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{template.title}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">{template.title}</h1>
           <span className="inline-block mt-1 text-xs bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full font-medium">
             {template.category}
           </span>
         </div>
-        <div className="flex gap-2 shrink-0">
+        <div className="flex gap-2 w-full sm:w-auto">
           <Button
             variant="outline"
             onClick={() => router.push(`/templates/${template.id}/edit`)}
+            className="flex-1 sm:flex-none"
           >
             Düzenle
           </Button>
@@ -73,6 +74,7 @@ export default function TemplateDetailPage() {
             variant="destructive"
             onClick={handleDelete}
             disabled={deleting}
+            className="flex-1 sm:flex-none"
           >
             {deleting ? 'Siliniyor...' : 'Sil'}
           </Button>

@@ -32,13 +32,13 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Ayarlar</h1>
+      <h1 className="text-xl sm:text-2xl font-bold">Ayarlar</h1>
 
       <Card>
-        <CardHeader>
-          <CardTitle>PWA Kurulumu</CardTitle>
+        <CardHeader className="px-4 sm:px-6">
+          <CardTitle className="text-base sm:text-lg">PWA Kurulumu</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 px-4 sm:px-6 pb-4 sm:pb-6">
           <p className="text-sm text-gray-600">
             TKD Plan bir Progressive Web App (PWA) olarak çalışır. Aşağıdaki adımları izleyerek
             uygulamayı cihazınıza kurabilirsiniz:
@@ -55,10 +55,10 @@ export default function SettingsPage() {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Senkronizasyon Kuyruğu</CardTitle>
+        <CardHeader className="px-4 sm:px-6">
+          <CardTitle className="text-base sm:text-lg">Senkronizasyon Kuyruğu</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 px-4 sm:px-6 pb-4 sm:pb-6">
           <p className="text-sm text-gray-600">
             Offline iken yapılan değişiklikler bu kuyrukta bekletilir. İnternet bağlantısı
             geldiğinde otomatik olarak senkronize edilir.
@@ -75,10 +75,10 @@ export default function SettingsPage() {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-red-600">Tehlikeli Bölge</CardTitle>
+        <CardHeader className="px-4 sm:px-6">
+          <CardTitle className="text-red-600 text-base sm:text-lg">Tehlikeli Bölge</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 px-4 sm:px-6 pb-4 sm:pb-6">
           <p className="text-sm text-gray-600">
             Tüm yerel verileri temizler (cache, IndexedDB, localStorage). Bu işlem sadece
             istemci tarafındaki verileri temizler, Supabase sunucunuzdaki veriler etkilenmez.
@@ -90,10 +90,10 @@ export default function SettingsPage() {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Uygulama Bilgisi</CardTitle>
+        <CardHeader className="px-4 sm:px-6">
+          <CardTitle className="text-base sm:text-lg">Uygulama Bilgisi</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-gray-600 space-y-1">
+        <CardContent className="text-sm text-gray-600 space-y-1 px-4 sm:px-6 pb-4 sm:pb-6">
           <p><strong>Versiyon:</strong> 1.0.0</p>
           <p><strong>Amaç:</strong> Taekwondo antrenmanlarını planlama, arşivleme ve takvimleme</p>
           <p><strong>Platform:</strong> PWA (Next.js + Supabase)</p>

@@ -22,7 +22,7 @@ export default function NavLinks() {
         <Link
           key={l.href}
           href={l.href}
-          className="hover:text-blue-200 transition-colors px-2 py-1 rounded active:bg-blue-800"
+          className="hover:text-blue-200 transition-colors px-2 py-[10px] md:py-1 rounded active:bg-blue-800 whitespace-nowrap"
         >
           {l.label}
         </Link>

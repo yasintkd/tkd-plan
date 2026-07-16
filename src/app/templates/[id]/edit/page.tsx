@@ -84,7 +84,7 @@ export default function EditTemplatePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Şablonu Düzenle</h1>
+      <h1 className="text-xl sm:text-2xl font-bold">Şablonu Düzenle</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
@@ -164,7 +164,7 @@ export default function EditTemplatePage() {
           />
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <Button type="submit" disabled={saving || !title.trim() || (!category && !newCategory)}>
             {saving ? 'Kaydediliyor...' : 'Kaydet'}
           </Button>

@@ -30,8 +30,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   themeColor: "#1e3a8a",
   viewportFit: "cover",
 };
@@ -55,7 +53,7 @@ export default function RootLayout({
         <meta name="format-detection" content="telephone=no" />
         <link rel="manifest" href="/manifest.json" />
       </head>
-      <body className="min-h-full flex flex-col bg-gray-50 text-gray-900">
+      <body className="min-h-dvh flex flex-col bg-gray-50 text-gray-900">
         <Script
           id="service-worker"
           strategy="afterInteractive"
@@ -71,18 +69,22 @@ export default function RootLayout({
         />
         <div className="bg-blue-900 safe-area-top" />
         <AuthProvider>
-          <header className="bg-blue-900 text-white shadow-md">
-            <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-              <Link href="/" className="text-lg md:text-xl font-bold tracking-tight">
-                TKD Plan
-              </Link>
-              <nav className="flex gap-3 md:gap-4 text-sm font-medium items-center">
+          <header className="bg-blue-900 text-white shadow-md safe-area-top">
+            <div className="max-w-4xl mx-auto px-3 py-2 md:py-3">
+              <div className="flex items-center justify-between mb-1 md:mb-0">
+                <Link href="/" className="text-base md:text-xl font-bold tracking-tight touch-target flex items-center">
+                  TKD Plan
+                </Link>
+                <div className="flex items-center gap-1 md:gap-2">
+                  <AuthNav />
+                </div>
+              </div>
+              <nav className="flex gap-1 md:gap-2 text-xs md:text-sm font-medium items-center overflow-x-auto pb-0.5 scrollbar-none" style={{scrollbarWidth:'none'}}>
                 <NavLinks />
-                <AuthNav />
               </nav>
             </div>
           </header>
-          <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-4 md:py-6 safe-area-bottom">
+          <main className="flex-1 max-w-4xl w-full mx-auto px-3 py-3 md:px-4 md:py-6 safe-area-bottom pb-[max(env(safe-area-inset-bottom,0px),0.75rem)]">
             {children}
           </main>
         </AuthProvider>

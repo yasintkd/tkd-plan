@@ -60,20 +60,20 @@ export default function TemplatesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Şablonlar</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Şablonlar</h1>
           <p className="text-sm text-gray-500 mt-1">
             Drill şablonlarını yönetin, program oluştururken hızlıca ekleyin
           </p>
         </div>
-        <Button onClick={() => router.push('/templates/new')}>
+        <Button onClick={() => router.push('/templates/new')} className="w-full sm:w-auto">
           + Yeni Şablon
         </Button>
       </div>
 
       {/* Category Filters */}
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex gap-1.5 overflow-x-auto scroll-snap-x pb-1 -mx-3 px-3">
         <button
           type="button"
           onClick={() => setSelectedCategory(null)}
@@ -103,10 +103,10 @@ export default function TemplatesPage() {
 
       {/* Search */}
       <Input
-        placeholder="Şablon ara (isim, drill, kategori)..."
+        placeholder="Şablon ara..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="max-w-md"
+        className="w-full"
       />
 
       {/* Template List */}

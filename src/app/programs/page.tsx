@@ -31,10 +31,10 @@ export default function ProgramsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Program Havuzu</h1>
-        <Link href="/programs/new">
-          <Button>+ Yeni Program</Button>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <h1 className="text-xl sm:text-2xl font-bold">Program Havuzu</h1>
+        <Link href="/programs/new" className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto">+ Yeni Program</Button>
         </Link>
       </div>
 
@@ -64,18 +64,19 @@ export default function ProgramsPage() {
                 <p className="text-sm text-gray-500 mb-3">
                   {program.sections?.length || 0} bölüm
                 </p>
-                <div className="flex gap-2">
-                  <Link href={`/programs/${program.id}/edit`}>
-                    <Button variant="outline" size="sm">Düzenle</Button>
-                  </Link>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={(e) => handleDelete(e, program.id, program.name)}
-                  >
-                    Sil
-                  </Button>
-                </div>
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <Link href={`/programs/${program.id}/edit`} className="flex-1 sm:flex-initial">
+                  <Button variant="outline" size="sm" className="w-full sm:w-auto min-h-[44px] sm:min-h-0">Düzenle</Button>
+                </Link>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={(e) => handleDelete(e, program.id, program.name)}
+                  className="flex-1 sm:flex-initial min-h-[44px] sm:min-h-0"
+                >
+                  Sil
+                </Button>
+              </div>
               </CardContent>
             </Card>
           ))}

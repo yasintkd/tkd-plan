@@ -84,9 +84,9 @@ export default function SessionDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Seans Detayı</h1>
-        <Button variant="destructive" size="sm" onClick={handleDelete}>
+      <div className="flex items-start sm:items-center justify-between gap-2 flex-col sm:flex-row">
+        <h1 className="text-xl sm:text-2xl font-bold">Seans Detayı</h1>
+        <Button variant="destructive" size="sm" onClick={handleDelete} className="w-full sm:w-auto">
           Sil
         </Button>
       </div>
@@ -141,17 +141,17 @@ export default function SessionDetailPage() {
               {assignedUsers.map(u => (
                 <span key={u.id} className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
                   {u.display_name || u.email}
-                  <button onClick={async () => { await removeAssignment(id, u.id); loadAssignments(); }} className="hover:text-red-600 ml-1">&times;</button>
+                  <button onClick={async () => { await removeAssignment(id, u.id); loadAssignments(); }} className="hover:text-red-600 ml-1 min-w-[24px] min-h-[24px] flex items-center justify-center">&times;</button>
                 </span>
               ))}
             </div>
             {availableUsers.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {availableUsers.map(u => (
+                    {availableUsers.map(u => (
                   <button
                     key={u.id}
                     onClick={async () => { await addAssignment(id, u.id); loadAssignments(); }}
-                    className="text-xs border border-dashed border-gray-300 px-2 py-1 rounded-full hover:bg-gray-100"
+                    className="text-xs border border-dashed border-gray-300 px-3 py-2 rounded-full hover:bg-gray-100 min-h-[36px]"
                   >
                     + {u.display_name || u.email}
                   </button>
@@ -171,7 +171,7 @@ export default function SessionDetailPage() {
                 <h3 className="font-semibold text-lg text-blue-700 bg-blue-50 -mx-6 -mt-4 px-6 py-3 mb-2 border-b border-blue-100">
                   {section.title}
                 </h3>
-                <div className="whitespace-pre-wrap text-sm text-black leading-relaxed">
+                <div className="whitespace-pre-wrap break-words text-sm text-black leading-relaxed">
                   {section.drills}
                 </div>
               </CardContent>
@@ -197,8 +197,8 @@ export default function SessionDetailPage() {
         </CardContent>
       </Card>
 
-      <div className="flex gap-3">
-        <Button variant="outline" onClick={() => router.back()}>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Button variant="outline" onClick={() => router.back()} className="w-full sm:w-auto">
           Geri
         </Button>
       </div>

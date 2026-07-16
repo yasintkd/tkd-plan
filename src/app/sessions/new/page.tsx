@@ -64,12 +64,12 @@ function NewSessionForm() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Yeni Seans</h1>
+      <h1 className="text-xl sm:text-2xl font-bold">Yeni Seans</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card>
           <CardContent className="pt-4 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="date">Tarih</Label>
                 <Input
@@ -172,7 +172,7 @@ function NewSessionForm() {
           </CardContent>
         </Card>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <Button type="submit" disabled={saving}>
             {saving ? 'Kaydediliyor...' : 'Kaydet'}
           </Button>

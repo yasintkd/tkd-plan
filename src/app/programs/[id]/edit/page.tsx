@@ -78,7 +78,7 @@ export default function EditProgramPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Programı Düzenle</h1>
+      <h1 className="text-xl sm:text-2xl font-bold">Programı Düzenle</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
@@ -93,14 +93,14 @@ export default function EditProgramPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-lg font-semibold">Bölümler</Label>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => setTemplatePickerOpen(true)}>
-                + Şablon Ekle
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <Label className="text-base sm:text-lg font-semibold">Bölümler</Label>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button type="button" variant="outline" size="sm" onClick={() => setTemplatePickerOpen(true)} className="flex-1 sm:flex-none">
+                + Şablon
               </Button>
-              <Button type="button" variant="outline" size="sm" onClick={addSection}>
-                + Boş Bölüm Ekle
+              <Button type="button" variant="outline" size="sm" onClick={addSection} className="flex-1 sm:flex-none">
+                + Boş
               </Button>
             </div>
           </div>
@@ -138,7 +138,7 @@ export default function EditProgramPage() {
           ))}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <Button type="submit" disabled={saving || !name.trim()}>
             {saving ? 'Kaydediliyor...' : 'Kaydet'}
           </Button>
