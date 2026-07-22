@@ -5,7 +5,7 @@ import Link from "next/link";
 import Script from "next/script";
 import { AuthProvider } from "@/lib/auth";
 import AuthNav from "@/components/auth-nav";
-import NavLinks from "@/components/nav-links";
+import { NavLinks, MobileNavLinks } from "@/components/nav-links";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -67,26 +67,41 @@ export default function RootLayout({
             `,
           }}
         />
-        <div className="bg-blue-900 safe-area-top" />
         <AuthProvider>
-          <header className="bg-blue-900 text-white shadow-md safe-area-top">
-            <div className="max-w-4xl mx-auto px-3 py-2 md:py-3">
-              <div className="flex items-center justify-between mb-1 md:mb-0">
-                <Link href="/" className="text-base md:text-xl font-bold tracking-tight touch-target flex items-center">
+          {/* Desktop header */}
+          <header className="hidden md:block bg-blue-900/85 backdrop-blur-lg text-white shadow-sm border-b border-white/10 sticky top-0 z-50 safe-area-top">
+            <div className="max-w-4xl mx-auto px-4 py-2 flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                <Link href="/" className="text-lg font-bold tracking-tight">
                   TKD Plan
                 </Link>
-                <div className="flex items-center gap-1 md:gap-2">
-                  <AuthNav />
-                </div>
+                <nav className="flex items-center gap-1">
+                  <NavLinks />
+                </nav>
               </div>
-              <nav className="flex gap-1 md:gap-2 text-xs md:text-sm font-medium items-center overflow-x-auto pb-0.5 scrollbar-none" style={{scrollbarWidth:'none'}}>
-                <NavLinks />
-              </nav>
+              <AuthNav />
             </div>
           </header>
-          <main className="flex-1 max-w-4xl w-full mx-auto px-3 py-3 md:px-4 md:py-6 safe-area-bottom pb-[max(env(safe-area-inset-bottom,0px),0.75rem)]">
+
+          {/* Mobile header */}
+          <header className="md:hidden bg-blue-900/85 backdrop-blur-lg text-white border-b border-white/10 sticky top-0 z-50">
+            <div className="safe-area-top" />
+            <div className="flex items-center justify-between px-3 py-2">
+              <Link href="/" className="text-base font-bold tracking-tight">
+                TKD Plan
+              </Link>
+              <AuthNav />
+            </div>
+          </header>
+
+          <main className="flex-1 max-w-4xl w-full mx-auto px-3 py-3 md:px-4 md:py-6 pb-[max(env(safe-area-inset-bottom,0px),4.5rem)] md:pb-6 safe-area-bottom">
             {children}
           </main>
+
+          {/* Mobile bottom tab bar */}
+          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-t border-gray-200/60 safe-area-bottom">
+            <MobileNavLinks />
+          </div>
         </AuthProvider>
       </body>
     </html>
