@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { canManage } from '@/lib/role-check';
+import { isAdmin } from '@/lib/role-check';
 import { createSectionTemplate, getCategories, deleteCategory } from '@/lib/section-templates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,7 @@ export default function NewTemplatePage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!canManage(profile?.role)) { router.replace('/dashboard'); }
+    if (!isAdmin(profile?.role)) { router.replace('/dashboard'); }
   }, [profile, authLoading, router]);
 
   const [title, setTitle] = useState('');

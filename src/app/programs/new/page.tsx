@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { canManage } from '@/lib/role-check';
+import { isAdmin } from '@/lib/role-check';
 import { createProgram } from '@/lib/programs';
 import type { Section } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,7 @@ export default function NewProgramPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!canManage(profile?.role)) { router.replace('/dashboard'); }
+    if (!isAdmin(profile?.role)) { router.replace('/dashboard'); }
   }, [profile, authLoading, router]);
   const [sections, setSections] = useState<Section[]>([
     { title: '', drills: '' },

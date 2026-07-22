@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { canManage } from '@/lib/role-check';
+import { isAdmin } from '@/lib/role-check';
 import { getSectionTemplate, deleteSectionTemplate } from '@/lib/section-templates';
 import type { SectionTemplate } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ export default function TemplateDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const { profile } = useAuth();
-  const isAdmin = canManage(profile?.role);
+  const manage = isAdmin(profile?.role);
 
   const [template, setTemplate] = useState<SectionTemplate | null>(null);
   const [loading, setLoading] = useState(true);
@@ -66,7 +66,7 @@ export default function TemplateDetailPage() {
             {template.category}
           </span>
         </div>
-        {isAdmin && (
+        {manage && (
           <div className="flex gap-2 w-full sm:w-auto">
             <Button
               variant="outline"

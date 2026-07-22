@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getSectionTemplates, deleteSectionTemplate, getCategories } from '@/lib/section-templates';
 import type { SectionTemplate } from '@/types';
 import { useAuth } from '@/lib/auth';
-import { canManage } from '@/lib/role-check';
+import { isAdmin } from '@/lib/role-check';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -69,7 +69,7 @@ export default function TemplatesPage() {
             Drill şablonlarını yönetin, program oluştururken hızlıca ekleyin
           </p>
         </div>
-        {canManage(profile?.role) && (
+        {isAdmin(profile?.role) && (
           <Button onClick={() => router.push('/templates/new')} className="w-full sm:w-auto">
             + Yeni Şablon
           </Button>
@@ -155,7 +155,7 @@ export default function TemplatesPage() {
                         {template.title}
                       </h3>
                       <div className="flex gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-                        {canManage(profile?.role) && (
+                        {isAdmin(profile?.role) && (
                           <>
                         <button
                           className="text-xs text-gray-400 hover:text-blue-600 px-1.5 py-0.5 rounded hover:bg-blue-50 transition-colors"

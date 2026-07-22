@@ -11,7 +11,7 @@ import { tr } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth';
-import { canManage } from '@/lib/role-check';
+import { isAdmin } from '@/lib/role-check';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -31,12 +31,14 @@ export default function DashboardPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const sessions = canManage(profile?.role)
+        const sessions = isAdmin(profile?.role)
           ? await getSessionsByDate(today)
           : await getSessionsByDateAssigned(today, user!.id);
-        const programs = await getPrograms();
         setTodaySessions(sessions);
-        setProgramCount(programs.length);
+        if (isAdmin(profile?.role)) {
+          const programs = await getPrograms();
+          setProgramCount(programs.length);
+        }
       } catch (err) {
         console.error('Dashboard verileri yüklenirken hata:', err);
       } finally {
@@ -56,7 +58,7 @@ export default function DashboardPage() {
           <p className="text-gray-500 text-sm">{todayDisplay}</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
-          {canManage(profile?.role) && (
+          {isAdmin(profile?.role) && (
             <Link href="/programs/new" className="flex-1 sm:flex-initial">
               <Button variant="outline" className="w-full sm:w-auto">Yeni Program</Button>
             </Link>
@@ -109,8 +111,8 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className={`grid gap-4 ${canManage(profile?.role) ? 'grid-cols-2' : 'grid-cols-1'}`}>
-        {canManage(profile?.role) && (
+      <div className={`grid gap-4 ${isAdmin(profile?.role) ? 'grid-cols-2' : 'grid-cols-1'}`}>
+        {isAdmin(profile?.role) && (
           <div
             onClick={() => router.push('/programs')}
             className="cursor-pointer"

@@ -8,14 +8,14 @@ import type { Program } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/lib/auth';
-import { canManage } from '@/lib/role-check';
+import { isAdmin } from '@/lib/role-check';
 
 export default function ProgramDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
   const { profile } = useAuth();
-  const isAdmin = canManage(profile?.role);
+  const manage = isAdmin(profile?.role);
 
   const [program, setProgram] = useState<Program | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,7 +55,7 @@ export default function ProgramDetailPage() {
           </Link>
           <h1 className="text-xl sm:text-2xl font-bold mt-1">{program.name}</h1>
         </div>
-        {isAdmin && (
+        {manage && (
           <div className="flex gap-2 w-full sm:w-auto">
             <Button
               variant="outline"

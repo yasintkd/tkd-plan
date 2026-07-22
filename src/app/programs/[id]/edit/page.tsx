@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { getProgram, updateProgram } from '@/lib/programs';
 import type { Section } from '@/types';
 import { useAuth } from '@/lib/auth';
-import { canManage } from '@/lib/role-check';
+import { isAdmin } from '@/lib/role-check';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,7 +21,7 @@ export default function EditProgramPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!canManage(profile?.role)) { router.replace('/dashboard'); }
+    if (!isAdmin(profile?.role)) { router.replace('/dashboard'); }
   }, [profile, authLoading, router]);
 
   const [name, setName] = useState('');

@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { canManage } from '@/lib/role-check';
+import { isAdmin } from '@/lib/role-check';
 
 export default function ProgramsPage() {
   const { profile, loading: authLoading } = useAuth();
@@ -18,7 +18,7 @@ export default function ProgramsPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!canManage(profile?.role)) { router.replace('/dashboard'); return; }
+    if (!isAdmin(profile?.role)) { router.replace('/dashboard'); return; }
   }, [profile, authLoading, router]);
 
   useEffect(() => {
