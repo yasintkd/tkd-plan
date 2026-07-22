@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       display_name: email?.split('@')[0] ?? '',
       role: 'guest',
       status: 'pending',
-    }, { onConflict: 'id', ignoreDuplicates: false }).select().single();
+    }, { onConflict: 'id', ignoreDuplicates: true }).select().single();
     return data as Profile | null;
   }, []);
 
