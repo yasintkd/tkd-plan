@@ -2,15 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { getSectionTemplates, deleteSectionTemplate, getCategories } from '@/lib/section-templates';
 import type { SectionTemplate } from '@/types';
+import { useAuth } from '@/lib/auth';
+import { canManage } from '@/lib/role-check';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
 export default function TemplatesPage() {
   const router = useRouter();
+  const { profile, loading: authLoading } = useAuth();
   const [templates, setTemplates] = useState<SectionTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -67,9 +69,11 @@ export default function TemplatesPage() {
             Drill şablonlarını yönetin, program oluştururken hızlıca ekleyin
           </p>
         </div>
-        <Button onClick={() => router.push('/templates/new')} className="w-full sm:w-auto">
-          + Yeni Şablon
-        </Button>
+        {canManage(profile?.role) && (
+          <Button onClick={() => router.push('/templates/new')} className="w-full sm:w-auto">
+            + Yeni Şablon
+          </Button>
+        )}
       </div>
 
       {/* Category Filters */}
@@ -151,6 +155,8 @@ export default function TemplatesPage() {
                         {template.title}
                       </h3>
                       <div className="flex gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                        {canManage(profile?.role) && (
+                          <>
                         <button
                           className="text-xs text-gray-400 hover:text-blue-600 px-1.5 py-0.5 rounded hover:bg-blue-50 transition-colors"
                           onClick={() => router.push(`/templates/${template.id}/edit`)}
@@ -171,6 +177,8 @@ export default function TemplatesPage() {
                             <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
                           </svg>
                         </button>
+                        </>
+                      )}
                       </div>
                     </div>
                     <p className="text-xs text-gray-500 line-clamp-2 whitespace-pre-wrap">

@@ -40,9 +40,12 @@ export async function createProgram(name: string, sections: { title: string; dri
   const supabase = getSupabase();
   if (!supabase) return null;
 
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
   const { data, error } = await supabase
     .from('programs')
-    .insert({ name, sections })
+    .insert({ name, sections, created_by: user.id })
     .select()
     .single();
 

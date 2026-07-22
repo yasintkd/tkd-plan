@@ -60,9 +60,12 @@ export async function createSectionTemplate(title: string, category: string, dri
   const supabase = getSupabase();
   if (!supabase) return null;
 
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
   const { data, error } = await supabase
     .from('section_templates')
-    .insert({ title, category, drills })
+    .insert({ title, category, drills, created_by: user.id })
     .select()
     .single();
 
