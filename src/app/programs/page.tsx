@@ -72,12 +72,12 @@ export default function ProgramsPage() {
               className="relative hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
               onClick={() => router.push(`/programs/${program.id}`)}
             >
-              <div className={`absolute left-0 top-0 bottom-0 w-1 ${getUserColor(program.created_by ?? '') || 'bg-blue-500'}`} />
+              <div className={`absolute left-0 top-0 bottom-0 w-1 ${isAdminUser && program.created_by === profile?.id ? 'bg-blue-500' : getUserColor(program.created_by ?? '') || 'bg-blue-500'}`} />
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">{program.name}</CardTitle>
                 {isAdminUser && program.creator_name && (
                   <span className="inline-flex items-center gap-1.5 text-xs mt-1">
-                    <span className={`inline-block w-2.5 h-2.5 rounded-full ${getUserColor(program.created_by ?? '')}`} />
+                    <span className={`inline-block w-2.5 h-2.5 rounded-full ${isAdminUser && program.created_by === profile?.id ? 'bg-blue-500' : getUserColor(program.created_by ?? '')}`} />
                     {program.creator_name}
                   </span>
                 )}

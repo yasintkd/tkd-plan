@@ -60,7 +60,7 @@ export default function ProgramDetailPage() {
           <div className="text-xs text-gray-400 mt-0.5">
             {program.creator_name && (
               <span className="inline-flex items-center gap-1">
-                <span className={`inline-block w-2 h-2 rounded-full ${getUserColor(program.created_by ?? '')}`} />
+                <span className={`inline-block w-2 h-2 rounded-full ${isAdminUser && program.created_by === profile?.id ? 'bg-blue-500' : getUserColor(program.created_by ?? '')}`} />
                 {program.creator_name}
               </span>
             )}

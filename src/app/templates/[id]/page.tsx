@@ -72,7 +72,7 @@ export default function TemplateDetailPage() {
           {template.creator_name && (
             <div className="text-xs text-gray-400 mt-1">
               <span className="inline-flex items-center gap-1">
-                <span className={`inline-block w-2 h-2 rounded-full ${getUserColor(template.created_by ?? '')}`} />
+                <span className={`inline-block w-2 h-2 rounded-full ${isAdmin(profile?.role) && template.created_by === profile?.id ? 'bg-blue-500' : getUserColor(template.created_by ?? '')}`} />
                 {template.creator_name}
               </span>
             </div>

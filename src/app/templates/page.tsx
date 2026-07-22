@@ -150,7 +150,7 @@ export default function TemplatesPage() {
                   className="relative bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors overflow-hidden cursor-pointer group"
                   onClick={() => router.push(`/templates/${template.id}`)}
                 >
-                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${getUserColor(template.created_by ?? '') || 'bg-blue-500'}`} />
+                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${isAdminUser && template.created_by === profile?.id ? 'bg-blue-500' : getUserColor(template.created_by ?? '') || 'bg-blue-500'}`} />
                   <div className="pl-4 p-3 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-medium text-sm leading-snug text-gray-900">
