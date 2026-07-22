@@ -11,8 +11,12 @@ DROP POLICY IF EXISTS "admin_all_sessions" ON sessions;
 DROP POLICY IF EXISTS "assigned_sessions" ON sessions;
 DROP POLICY IF EXISTS "admin_all_programs" ON programs;
 DROP POLICY IF EXISTS "no_programs_for_non_admin" ON programs;
+DROP POLICY IF EXISTS "assistant_own_programs" ON programs;
+DROP POLICY IF EXISTS "guest_own_programs" ON programs;
 DROP POLICY IF EXISTS "admin_all_templates" ON section_templates;
 DROP POLICY IF EXISTS "no_templates_for_non_admin" ON section_templates;
+DROP POLICY IF EXISTS "assistant_own_templates" ON section_templates;
+DROP POLICY IF EXISTS "guest_own_templates" ON section_templates;
 
 -- Tablolar (zaten varsa oluşturmaz)
 CREATE TABLE IF NOT EXISTS programs (
