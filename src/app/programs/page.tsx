@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { isAdmin } from '@/lib/role-check';
+import { isAdmin, canCreate } from '@/lib/role-check';
+import { getUserColor } from '@/lib/utils';
 
 export default function ProgramsPage() {
   const { profile, loading: authLoading } = useAuth();
@@ -18,15 +19,21 @@ export default function ProgramsPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!isAdmin(profile?.role)) { router.replace('/dashboard'); return; }
+    if (!canCreate(profile?.role)) { router.replace('/dashboard'); return; }
   }, [profile, authLoading, router]);
+
+  const isAdminUser = isAdmin(profile?.role);
+  const showActions = (p: Program) => isAdminUser || p.created_by === profile?.id;
 
   useEffect(() => {
     getPrograms().then((data) => {
+      if (!isAdminUser) {
+        data = data.filter((p) => p.created_by === profile?.id);
+      }
       setPrograms(data);
       setLoading(false);
     });
-  }, []);
+  }, [isAdminUser, profile?.id]);
 
   async function handleDelete(e: React.MouseEvent, id: string, name: string) {
     e.stopPropagation();
@@ -67,24 +74,32 @@ export default function ProgramsPage() {
             >
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">{program.name}</CardTitle>
+                {isAdminUser && program.creator_name && (
+                  <span className="inline-flex items-center gap-1.5 text-xs mt-1">
+                    <span className={`inline-block w-2.5 h-2.5 rounded-full ${getUserColor(program.created_by ?? '')}`} />
+                    {program.creator_name}
+                  </span>
+                )}
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-500 mb-3">
                   {program.sections?.length || 0} bölüm
                 </p>
-              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                <Link href={`/programs/${program.id}/edit`} className="flex-1 sm:flex-initial">
-                  <Button variant="outline" size="sm" className="w-full sm:w-auto min-h-[44px] sm:min-h-0">Düzenle</Button>
-                </Link>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={(e) => handleDelete(e, program.id, program.name)}
-                  className="flex-1 sm:flex-initial min-h-[44px] sm:min-h-0"
-                >
-                  Sil
-                </Button>
-              </div>
+                {showActions(program) && (
+                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <Link href={`/programs/${program.id}/edit`} className="flex-1 sm:flex-initial">
+                      <Button variant="outline" size="sm" className="w-full sm:w-auto min-h-[44px] sm:min-h-0">Düzenle</Button>
+                    </Link>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={(e) => handleDelete(e, program.id, program.name)}
+                      className="flex-1 sm:flex-initial min-h-[44px] sm:min-h-0"
+                    >
+                      Sil
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}

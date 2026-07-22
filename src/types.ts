@@ -9,6 +9,8 @@ export interface Program {
   name: string;
   sections: Section[];
   created_by?: string;
+  creator_name?: string | null;
+  creator_role?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -82,6 +84,8 @@ export interface SectionTemplate {
   category: string;
   drills: string;
   created_by?: string;
+  creator_name?: string | null;
+  creator_role?: string | null;
   created_at: string;
   updated_at: string;
 }

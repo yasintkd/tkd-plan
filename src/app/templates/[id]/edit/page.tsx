@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { isAdmin } from '@/lib/role-check';
+import { isAdmin, canCreate } from '@/lib/role-check';
 import { getSectionTemplate, updateSectionTemplate, getCategories, deleteCategory } from '@/lib/section-templates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,11 +16,6 @@ export default function EditTemplatePage() {
   const id = params.id as string;
   const { profile, loading: authLoading } = useAuth();
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (!isAdmin(profile?.role)) { router.replace('/dashboard'); }
-  }, [profile, authLoading, router]);
-
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
   const [drills, setDrills] = useState('');
@@ -31,26 +26,26 @@ export default function EditTemplatePage() {
   const [newCategory, setNewCategory] = useState('');
 
   useEffect(() => {
-    loadData();
-  }, [id]);
-
-  async function loadData() {
-    const [template, cats] = await Promise.all([getSectionTemplate(id), getCategories()]);
-    if (template) {
+    if (authLoading) return;
+    if (!canCreate(profile?.role)) { router.replace('/dashboard'); return; }
+    Promise.all([getSectionTemplate(id), getCategories()]).then(([template, cats]) => {
+      if (!template) { router.replace('/templates'); return; }
+      if (!isAdmin(profile?.role) && template.created_by !== profile?.id) { router.replace('/templates'); return; }
       setTitle(template.title);
       setCategory(template.category);
       setDrills(template.drills);
-    }
-    setCategories(cats);
-    setLoading(false);
-  }
+      setCategories(cats);
+      setLoading(false);
+    });
+  }, [id, profile, authLoading, router]);
 
   async function handleDeleteCategory(e: React.MouseEvent, cat: string) {
     e.stopPropagation();
     if (!confirm(`"${cat}" kategorisindeki tüm şablonları silmek istediğinize emin misiniz?`)) return;
     const result = await deleteCategory(cat);
     if (result.success) {
-      loadData();
+      const cats = await getCategories();
+      setCategories(cats);
     } else {
       alert('Kategori silinirken hata oluştu.');
     }

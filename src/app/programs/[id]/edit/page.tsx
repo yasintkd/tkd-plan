@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { getProgram, updateProgram } from '@/lib/programs';
 import type { Section } from '@/types';
 import { useAuth } from '@/lib/auth';
-import { isAdmin } from '@/lib/role-check';
+import { isAdmin, canCreate } from '@/lib/role-check';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,11 +19,6 @@ export default function EditProgramPage() {
   const id = params.id as string;
   const { profile, loading: authLoading } = useAuth();
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (!isAdmin(profile?.role)) { router.replace('/dashboard'); }
-  }, [profile, authLoading, router]);
-
   const [name, setName] = useState('');
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,14 +26,16 @@ export default function EditProgramPage() {
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!canCreate(profile?.role)) { router.replace('/dashboard'); return; }
     getProgram(id).then((program) => {
-      if (program) {
-        setName(program.name);
-        setSections(program.sections?.length ? program.sections : [{ title: '', drills: '' }]);
-      }
+      if (!program) { router.replace('/programs'); return; }
+      if (!isAdmin(profile?.role) && program.created_by !== profile?.id) { router.replace('/programs'); return; }
+      setName(program.name);
+      setSections(program.sections?.length ? program.sections : [{ title: '', drills: '' }]);
       setLoading(false);
     });
-  }, [id]);
+  }, [id, profile, authLoading, router]);
 
   function handleTemplateSelect(newSections: Section[]) {
     setSections([...sections, ...newSections]);

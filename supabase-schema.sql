@@ -95,8 +95,17 @@ ALTER TABLE programs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "admin_all_programs" ON programs
   FOR ALL USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
 
-CREATE POLICY "no_programs_for_non_admin" ON programs
-  FOR SELECT USING (false);
+CREATE POLICY "assistant_own_programs" ON programs
+  FOR ALL USING (
+    auth.uid() IN (SELECT id FROM profiles WHERE role = 'assistant')
+    AND created_by = auth.uid()
+  );
+
+CREATE POLICY "guest_own_programs" ON programs
+  FOR ALL USING (
+    auth.uid() IN (SELECT id FROM profiles WHERE role = 'guest')
+    AND created_by = auth.uid()
+  );
 
 -- Section templates için RLS: admin tümünü görür
 ALTER TABLE section_templates ENABLE ROW LEVEL SECURITY;
@@ -104,5 +113,14 @@ ALTER TABLE section_templates ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "admin_all_templates" ON section_templates
   FOR ALL USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
 
-CREATE POLICY "no_templates_for_non_admin" ON section_templates
-  FOR SELECT USING (false);
+CREATE POLICY "assistant_own_templates" ON section_templates
+  FOR ALL USING (
+    auth.uid() IN (SELECT id FROM profiles WHERE role = 'assistant')
+    AND created_by = auth.uid()
+  );
+
+CREATE POLICY "guest_own_templates" ON section_templates
+  FOR ALL USING (
+    auth.uid() IN (SELECT id FROM profiles WHERE role = 'guest')
+    AND created_by = auth.uid()
+  );

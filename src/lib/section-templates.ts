@@ -26,7 +26,7 @@ export async function getSectionTemplates(): Promise<SectionTemplate[]> {
 
   const { data, error } = await supabase
     .from('section_templates')
-    .select('*')
+    .select('*, profiles!created_by(display_name, role)')
     .order('category', { ascending: true })
     .order('title', { ascending: true });
 
@@ -35,7 +35,11 @@ export async function getSectionTemplates(): Promise<SectionTemplate[]> {
     return [];
   }
 
-  return data || [];
+  return (data || []).map((t: any) => ({
+    ...t,
+    creator_name: t.profiles?.display_name || null,
+    creator_role: t.profiles?.role || null,
+  }));
 }
 
 export async function getSectionTemplate(id: string): Promise<SectionTemplate | null> {
@@ -44,7 +48,7 @@ export async function getSectionTemplate(id: string): Promise<SectionTemplate | 
 
   const { data, error } = await supabase
     .from('section_templates')
-    .select('*')
+    .select('*, profiles!created_by(display_name, role)')
     .eq('id', id)
     .single();
 
@@ -53,7 +57,7 @@ export async function getSectionTemplate(id: string): Promise<SectionTemplate | 
     return null;
   }
 
-  return data;
+  return { ...data, creator_name: (data as any).profiles?.display_name || null, creator_role: (data as any).profiles?.role || null };
 }
 
 export async function createSectionTemplate(title: string, category: string, drills: string): Promise<SectionTemplate | null> {

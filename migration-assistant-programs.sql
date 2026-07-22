@@ -23,6 +23,12 @@ CREATE POLICY "assistant_own_programs" ON programs
     AND created_by = auth.uid()
   );
 
+CREATE POLICY "guest_own_programs" ON programs
+  FOR ALL USING (
+    auth.uid() IN (SELECT id FROM profiles WHERE role = 'guest')
+    AND created_by = auth.uid()
+  );
+
 -- section_templates RLS
 DROP POLICY IF EXISTS no_templates_for_non_admin ON section_templates;
 DROP POLICY IF EXISTS admin_all_templates ON section_templates;
@@ -35,5 +41,11 @@ CREATE POLICY "admin_all_templates" ON section_templates
 CREATE POLICY "assistant_own_templates" ON section_templates
   FOR ALL USING (
     auth.uid() IN (SELECT id FROM profiles WHERE role = 'assistant')
+    AND created_by = auth.uid()
+  );
+
+CREATE POLICY "guest_own_templates" ON section_templates
+  FOR ALL USING (
+    auth.uid() IN (SELECT id FROM profiles WHERE role = 'guest')
     AND created_by = auth.uid()
   );

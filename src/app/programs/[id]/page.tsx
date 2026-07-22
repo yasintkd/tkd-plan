@@ -9,13 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/lib/auth';
 import { isAdmin } from '@/lib/role-check';
+import { getUserColor } from '@/lib/utils';
 
 export default function ProgramDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
   const { profile } = useAuth();
-  const manage = isAdmin(profile?.role);
 
   const [program, setProgram] = useState<Program | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,6 +42,9 @@ export default function ProgramDetailPage() {
     );
   }
 
+  const isAdminUser = isAdmin(profile?.role);
+  const manage = isAdminUser || program.created_by === profile?.id;
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
@@ -54,6 +57,14 @@ export default function ProgramDetailPage() {
             ← Programlara Dön
           </Link>
           <h1 className="text-xl sm:text-2xl font-bold mt-1">{program.name}</h1>
+          <div className="text-xs text-gray-400 mt-0.5">
+            {program.creator_name && (
+              <span className="inline-flex items-center gap-1">
+                <span className={`inline-block w-2 h-2 rounded-full ${getUserColor(program.created_by ?? '')}`} />
+                {program.creator_name}
+              </span>
+            )}
+          </div>
         </div>
         {manage && (
           <div className="flex gap-2 w-full sm:w-auto">

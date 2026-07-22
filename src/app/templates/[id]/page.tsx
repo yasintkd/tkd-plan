@@ -9,13 +9,13 @@ import type { SectionTemplate } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { getUserColor } from '@/lib/utils';
 
 export default function TemplateDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
   const { profile } = useAuth();
-  const manage = isAdmin(profile?.role);
 
   const [template, setTemplate] = useState<SectionTemplate | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,6 +42,10 @@ export default function TemplateDetailPage() {
     }
   }
 
+  if (!profile) return null;
+
+  const manage = isAdmin(profile?.role) || template?.created_by === profile?.id;
+
   if (loading) return <p className="text-gray-400">Yükleniyor...</p>;
 
   if (!template) {
@@ -65,6 +69,14 @@ export default function TemplateDetailPage() {
           <span className="inline-block mt-1 text-xs bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full font-medium">
             {template.category}
           </span>
+          {template.creator_name && (
+            <div className="text-xs text-gray-400 mt-1">
+              <span className="inline-flex items-center gap-1">
+                <span className={`inline-block w-2 h-2 rounded-full ${getUserColor(template.created_by ?? '')}`} />
+                {template.creator_name}
+              </span>
+            </div>
+          )}
         </div>
         {manage && (
           <div className="flex gap-2 w-full sm:w-auto">

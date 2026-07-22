@@ -16,9 +16,9 @@ type LinkDef = {
 
 const LINKS: LinkDef[] = [
   { href: '/dashboard', label: 'Dashboard', icon: Home, roles: ['admin', 'assistant', 'guest'] },
-  { href: '/programs', label: 'Programlar', icon: Swords, roles: ['admin'] },
+  { href: '/programs', label: 'Programlar', icon: Swords, roles: ['admin', 'assistant', 'guest'] },
   { href: '/calendar', label: 'Takvim', icon: Calendar, roles: ['admin', 'assistant', 'guest'] },
-  { href: '/templates', label: 'Şablonlar', icon: LayoutTemplate, roles: ['admin'] },
+  { href: '/templates', label: 'Şablonlar', icon: LayoutTemplate, roles: ['admin', 'assistant', 'guest'] },
   { href: '/sessions/new', label: 'Session', icon: ClipboardList, roles: ['admin', 'assistant'] },
 ];
 

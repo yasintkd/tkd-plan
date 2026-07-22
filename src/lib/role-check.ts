@@ -7,3 +7,7 @@ export function canManage(role?: Role | null): boolean {
 export function isAdmin(role?: Role | null): boolean {
   return role === 'admin';
 }
+
+export function canCreate(role?: Role | null): boolean {
+  return role === 'admin' || role === 'assistant' || role === 'guest';
+}

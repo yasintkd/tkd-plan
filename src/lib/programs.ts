@@ -7,7 +7,7 @@ export async function getPrograms(): Promise<Program[]> {
 
   const { data, error } = await supabase
     .from('programs')
-    .select('*')
+    .select('*, profiles!created_by(display_name, role)')
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -15,7 +15,11 @@ export async function getPrograms(): Promise<Program[]> {
     return [];
   }
 
-  return data || [];
+  return (data || []).map((p: any) => ({
+    ...p,
+    creator_name: p.profiles?.display_name || null,
+    creator_role: p.profiles?.role || null,
+  }));
 }
 
 export async function getProgram(id: string): Promise<Program | null> {
@@ -24,7 +28,7 @@ export async function getProgram(id: string): Promise<Program | null> {
 
   const { data, error } = await supabase
     .from('programs')
-    .select('*')
+    .select('*, profiles!created_by(display_name, role)')
     .eq('id', id)
     .single();
 
@@ -33,7 +37,7 @@ export async function getProgram(id: string): Promise<Program | null> {
     return null;
   }
 
-  return data;
+  return { ...data, creator_name: (data as any).profiles?.display_name || null, creator_role: (data as any).profiles?.role || null };
 }
 
 export async function createProgram(name: string, sections: { title: string; drills: string }[]): Promise<Program | null> {

@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { getSectionTemplates, getCategories, createSectionTemplate } from '@/lib/section-templates';
 import type { Section, SectionTemplate } from '@/types';
+import { useAuth } from '@/lib/auth';
+import { isAdmin } from '@/lib/role-check';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -16,6 +18,7 @@ interface TemplatePickerProps {
 }
 
 export default function TemplatePicker({ open, onOpenChange, onSelect }: TemplatePickerProps) {
+  const { profile } = useAuth();
   const [templates, setTemplates] = useState<SectionTemplate[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -33,6 +36,9 @@ export default function TemplatePicker({ open, onOpenChange, onSelect }: Templat
   useEffect(() => {
     if (open) {
       Promise.all([getSectionTemplates(), getCategories()]).then(([tpls, cats]) => {
+        if (!isAdmin(profile?.role)) {
+          tpls = tpls.filter((t) => t.created_by === profile?.id);
+        }
         setTemplates(tpls);
         setCategories(cats);
         setSelectedIds(new Set());
