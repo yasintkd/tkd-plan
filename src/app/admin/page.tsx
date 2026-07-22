@@ -41,6 +41,14 @@ export default function AdminPage() {
     setApprovedUsers(prev => prev.map(p => p.id === userId ? { ...p, role } : p));
   };
 
+  const deleteUser = async (userId: string) => {
+    if (!confirm('Bu kullanıcıyı silmek istediğine emin misin?')) return;
+    const supabase = getSupabase();
+    if (!supabase) return;
+    await supabase.from('profiles').delete().eq('id', userId);
+    loadUsers();
+  };
+
   if (loading) return <div className="flex justify-center p-8"><div className="w-6 h-6 rounded-full border-2 border-blue-900/30 border-t-blue-900 animate-spin" /></div>;
 
   if (!user || profile?.role !== 'admin') return <div className="text-center p-8 text-gray-500">Yetkisiz erişim.</div>;
@@ -99,6 +107,9 @@ export default function AdminPage() {
                       <option value="assistant">Yardımcı</option>
                       <option value="admin">Admin</option>
                     </select>
+                    <button onClick={() => deleteUser(p.id)} className="bg-red-600 text-white px-3 py-3 sm:py-1 rounded text-sm hover:bg-red-700 min-h-[44px] sm:min-h-0 whitespace-nowrap">
+                      Sil
+                    </button>
                   </div>
                 </div>
               ))}
