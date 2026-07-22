@@ -7,11 +7,19 @@ import type { Program } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth';
+import { canManage } from '@/lib/role-check';
 
 export default function ProgramsPage() {
+  const { profile, loading: authLoading } = useAuth();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!canManage(profile?.role)) { router.replace('/dashboard'); return; }
+  }, [profile, authLoading, router]);
 
   useEffect(() => {
     getPrograms().then((data) => {

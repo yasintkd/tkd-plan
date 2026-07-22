@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getSessionsByDate } from '@/lib/sessions';
+import { getSessionsByDate, getSessionsByDateAssigned } from '@/lib/sessions';
 import { getPrograms } from '@/lib/programs';
 import type { Session } from '@/types';
 import { format } from 'date-fns';
@@ -11,6 +11,7 @@ import { tr } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth';
+import { canManage } from '@/lib/role-check';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -30,10 +31,10 @@ export default function DashboardPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [sessions, programs] = await Promise.all([
-          getSessionsByDate(today),
-          getPrograms(),
-        ]);
+        const sessions = canManage(profile?.role)
+          ? await getSessionsByDate(today)
+          : await getSessionsByDateAssigned(today, user!.id);
+        const programs = await getPrograms();
         setTodaySessions(sessions);
         setProgramCount(programs.length);
       } catch (err) {
@@ -43,7 +44,7 @@ export default function DashboardPage() {
       }
     }
     if (user) loadData();
-  }, [today, user]);
+  }, [today, user, profile]);
 
   if (authLoading || !user) return null;
 
@@ -55,9 +56,11 @@ export default function DashboardPage() {
           <p className="text-gray-500 text-sm">{todayDisplay}</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
-          <Link href="/programs/new" className="flex-1 sm:flex-initial">
-            <Button variant="outline" className="w-full sm:w-auto">Yeni Program</Button>
-          </Link>
+          {canManage(profile?.role) && (
+            <Link href="/programs/new" className="flex-1 sm:flex-initial">
+              <Button variant="outline" className="w-full sm:w-auto">Yeni Program</Button>
+            </Link>
+          )}
           <Link href="/calendar" className="flex-1 sm:flex-initial">
             <Button className="w-full sm:w-auto">Takvime Git</Button>
           </Link>
@@ -106,21 +109,23 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
-        <div
-          onClick={() => router.push('/programs')}
-          className="cursor-pointer"
-        >
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Program Havuzu</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-blue-900">{programCount}</p>
-              <p className="text-sm text-gray-500">kayıtlı program</p>
-            </CardContent>
-          </Card>
-        </div>
+      <div className={`grid gap-4 ${canManage(profile?.role) ? 'grid-cols-2' : 'grid-cols-1'}`}>
+        {canManage(profile?.role) && (
+          <div
+            onClick={() => router.push('/programs')}
+            className="cursor-pointer"
+          >
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Program Havuzu</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-blue-900">{programCount}</p>
+                <p className="text-sm text-gray-500">kayıtlı program</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-lg">Bugünkü Seans</CardTitle>

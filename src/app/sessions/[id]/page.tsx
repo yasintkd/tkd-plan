@@ -26,6 +26,7 @@ export default function SessionDetailPage() {
   const [selectedProgramId, setSelectedProgramId] = useState<string>('none');
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
+  const canView = !isAdmin;
   const [assignedUsers, setAssignedUsers] = useState<Profile[]>([]);
   const [availableUsers, setAvailableUsers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,9 +87,11 @@ export default function SessionDetailPage() {
     <div className="space-y-6">
       <div className="flex items-start sm:items-center justify-between gap-2 flex-col sm:flex-row">
         <h1 className="text-xl sm:text-2xl font-bold">Seans Detayı</h1>
-        <Button variant="destructive" size="sm" onClick={handleDelete} className="w-full sm:w-auto">
-          Sil
-        </Button>
+        {isAdmin && (
+          <Button variant="destructive" size="sm" onClick={handleDelete} className="w-full sm:w-auto">
+            Sil
+          </Button>
+        )}
       </div>
 
       {/* Session info */}
@@ -110,26 +113,28 @@ export default function SessionDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Program assignment */}
-      <Card>
-        <CardContent className="pt-4 space-y-3">
-          <Label>Program</Label>
-          <Select value={selectedProgramId} onValueChange={(v) => { if (v !== null) handleProgramChange(v) }}>
-            <SelectTrigger>
-              <SelectValue placeholder="Program seçin" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Programsız</SelectItem>
-              {programs.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {savingProgram && <p className="text-xs text-gray-400">Kaydediliyor...</p>}
-        </CardContent>
-      </Card>
+      {/* Program assignment (admin only) */}
+      {isAdmin && (
+        <Card>
+          <CardContent className="pt-4 space-y-3">
+            <Label>Program</Label>
+            <Select value={selectedProgramId} onValueChange={(v) => { if (v !== null) handleProgramChange(v) }}>
+              <SelectTrigger>
+                <SelectValue placeholder="Program seçin" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Programsız</SelectItem>
+                {programs.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {savingProgram && <p className="text-xs text-gray-400">Kaydediliyor...</p>}
+          </CardContent>
+        </Card>
+      )}
 
       {/* User assignments (admin only) */}
       {isAdmin && (
@@ -184,16 +189,24 @@ export default function SessionDetailPage() {
       <Card>
         <CardContent className="pt-4 space-y-3">
           <Label htmlFor="notes">Antrenman Notları</Label>
-          <Textarea
-            id="notes"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Antrenman sonrası notlarınız..."
-            rows={5}
-          />
-          <Button onClick={handleSaveNotes} disabled={savingNotes} size="sm">
-            {savingNotes ? 'Kaydediliyor...' : 'Notları Kaydet'}
-          </Button>
+          {isAdmin ? (
+            <>
+              <Textarea
+                id="notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Antrenman sonrası notlarınız..."
+                rows={5}
+              />
+              <Button onClick={handleSaveNotes} disabled={savingNotes} size="sm">
+                {savingNotes ? 'Kaydediliyor...' : 'Notları Kaydet'}
+              </Button>
+            </>
+          ) : (
+            <div className="whitespace-pre-wrap break-words text-sm text-gray-700 leading-relaxed">
+              {session.notes || 'Not eklenmemiş.'}
+            </div>
+          )}
         </CardContent>
       </Card>
 

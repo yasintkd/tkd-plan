@@ -12,6 +12,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/lib/auth';
+import { canManage } from '@/lib/role-check';
 
 type ViewMode = 'month' | 'week';
 
@@ -29,6 +31,8 @@ interface CalendarSession {
 }
 
 export default function CalendarPage() {
+  const { profile } = useAuth();
+  const isAdmin = canManage(profile?.role);
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [tkdSessions, setTkdSessions] = useState<Session[]>([]);
@@ -360,9 +364,11 @@ export default function CalendarPage() {
             <h2 className="text-base sm:text-lg font-semibold">
               {format(new Date(selectedDate + 'T12:00:00'), 'd MMMM yyyy', { locale: tr })}
             </h2>
-            <Link href={`/sessions/new?date=${selectedDate}`} className="w-full sm:w-auto">
-              <Button size="sm" className="w-full sm:w-auto">+ Seans Ekle</Button>
-            </Link>
+            {isAdmin && (
+              <Link href={`/sessions/new?date=${selectedDate}`} className="w-full sm:w-auto">
+                <Button size="sm" className="w-full sm:w-auto">+ Seans Ekle</Button>
+              </Link>
+            )}
           </div>
 
           {selectedDateSessions.length === 0 ? (
@@ -388,19 +394,21 @@ export default function CalendarPage() {
                             </div>
                             <p className="text-sm text-gray-500 mt-0.5">Henüz program atanmamış</p>
                           </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="w-full sm:w-auto"
-                            onClick={() => {
-                              const ycSession = ycSessions.find(
-                                (ys) => ys.id === session.id
-                              );
-                              if (ycSession) openAssignDialog(ycSession);
-                            }}
-                          >
-                            Program Ata
-                          </Button>
+                          {isAdmin && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="w-full sm:w-auto"
+                              onClick={() => {
+                                const ycSession = ycSessions.find(
+                                  (ys) => ys.id === session.id
+                                );
+                                if (ycSession) openAssignDialog(ycSession);
+                              }}
+                            >
+                              Program Ata
+                            </Button>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -424,17 +432,19 @@ export default function CalendarPage() {
                               </span>
                             )}
                           </Link>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              openChangeDialog(session);
-                            }}
-                            className="w-full sm:w-auto shrink-0"
-                          >
-                            Programı Değiştir
-                          </Button>
+                          {isAdmin && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                openChangeDialog(session);
+                              }}
+                              className="w-full sm:w-auto shrink-0"
+                            >
+                              Programı Değiştir
+                            </Button>
+                          )}
                         </div>
                       </CardContent>
                     </Card>

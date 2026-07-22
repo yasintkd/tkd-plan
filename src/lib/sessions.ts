@@ -57,6 +57,34 @@ export async function getSessionsByDate(date: string): Promise<Session[]> {
   return data || [];
 }
 
+export async function getSessionsByDateAssigned(date: string, userId: string): Promise<Session[]> {
+  const supabase = getSupabase();
+  if (!supabase || !userId) return [];
+
+  const { data: assignmentData } = await supabase
+    .from('session_assignments')
+    .select('session_id')
+    .eq('user_id', userId);
+
+  if (!assignmentData?.length) return [];
+
+  const sessionIds = assignmentData.map(a => a.session_id);
+
+  const { data, error } = await supabase
+    .from('sessions')
+    .select('*, program:programs(*)')
+    .eq('date', date)
+    .in('id', sessionIds)
+    .order('start_time', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching assigned sessions:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
 export async function getSession(id: string): Promise<Session | null> {
   const supabase = getSupabase();
   if (!supabase) return null;

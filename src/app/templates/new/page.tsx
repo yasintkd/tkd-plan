@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth';
+import { canManage } from '@/lib/role-check';
 import { createSectionTemplate, getCategories, deleteCategory } from '@/lib/section-templates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +13,13 @@ import { Label } from '@/components/ui/label';
 
 export default function NewTemplatePage() {
   const router = useRouter();
+  const { profile, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!canManage(profile?.role)) { router.replace('/dashboard'); }
+  }, [profile, authLoading, router]);
+
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
   const [drills, setDrills] = useState('');

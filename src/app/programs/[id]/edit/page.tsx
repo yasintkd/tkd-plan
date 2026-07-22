@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { getProgram, updateProgram } from '@/lib/programs';
 import type { Section } from '@/types';
+import { useAuth } from '@/lib/auth';
+import { canManage } from '@/lib/role-check';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,6 +17,12 @@ export default function EditProgramPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const { profile, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!canManage(profile?.role)) { router.replace('/dashboard'); }
+  }, [profile, authLoading, router]);
 
   const [name, setName] = useState('');
   const [sections, setSections] = useState<Section[]>([]);

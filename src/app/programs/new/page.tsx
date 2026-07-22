@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth';
+import { canManage } from '@/lib/role-check';
 import { createProgram } from '@/lib/programs';
 import type { Section } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -13,7 +15,13 @@ import TemplatePicker from '@/components/template-picker';
 
 export default function NewProgramPage() {
   const router = useRouter();
+  const { profile, loading: authLoading } = useAuth();
   const [name, setName] = useState('');
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!canManage(profile?.role)) { router.replace('/dashboard'); }
+  }, [profile, authLoading, router]);
   const [sections, setSections] = useState<Section[]>([
     { title: '', drills: '' },
   ]);

@@ -2,6 +2,8 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/lib/auth';
+import { canManage } from '@/lib/role-check';
 import { createSession } from '@/lib/sessions';
 import { getPrograms } from '@/lib/programs';
 import type { Program, RecurrenceFrequency } from '@/types';
@@ -16,6 +18,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 function NewSessionForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { profile, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!canManage(profile?.role)) { router.replace('/dashboard'); }
+  }, [profile, authLoading, router]);
   const initialDate = searchParams.get('date') || format(new Date(), 'yyyy-MM-dd');
 
   const [date, setDate] = useState(initialDate);
