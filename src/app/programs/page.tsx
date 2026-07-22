@@ -69,9 +69,10 @@ export default function ProgramsPage() {
           {programs.map((program) => (
             <Card
               key={program.id}
-              className="hover:shadow-md transition-shadow cursor-pointer"
+              className="relative hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
               onClick={() => router.push(`/programs/${program.id}`)}
             >
+              <div className={`absolute left-0 top-0 bottom-0 w-1 ${getUserColor(program.created_by ?? '') || 'bg-blue-500'}`} />
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">{program.name}</CardTitle>
                 {isAdminUser && program.creator_name && (
