@@ -158,6 +158,7 @@ html {
   text-size-adjust: 100%;
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 /* All interactive elements get minimum 44px touch target on mobile */
